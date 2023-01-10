@@ -62,14 +62,17 @@ const arabian = [0, 1, 4, 5, 7, 8, 10];
 const gipsy = [0, 1, 4, 5, 7, 8, 11];
 const harmonicMinor = [0, 2, 3, 5, 7, 8, 11];
 const arabianDorian = [0, 2, 3, 6, 7, 9, 10];
-const celtic = [0, 2, 3, 5, 7, 10];
 
-const modeOffsets = [celtic, arabian, aeolianModeOffsets, phrygianModeOffsets];
+const modeOffsets = [
+  aeolianModeOffsets,
+  phrygianModeOffsets,
+  dorianModeOffsets,
+  lydianModeOffsets,
+  ionianModeOffsets,
+  mixolydianModeOffsets,
+];
 
 const timer = new Timer();
-const startBpm = 90;
-const lfo = audioCtx.createOscillator();
-const lfoGain = audioCtx.createGain();
 const filter = audioCtx.createBiquadFilter();
 const delayNode = audioCtx.createDelay();
 const feedbackGainNode = audioCtx.createGain();
@@ -85,11 +88,15 @@ const ctx = canvas.getContext("2d");
 const velocities = [0.5, 1];
 
 let currentStep = 0;
-let bpm = startBpm;
+let bpm = 90;
 let noteArray = [];
 let bassArray = [];
 let chordArray = [];
 let melodyArray = [];
+let noteThemeArray = [];
+let bassThemeArray = [];
+let chordThemeArray = [];
+let melodyThemeArray = [];
 let kick;
 let chh;
 let ohh;
@@ -122,15 +129,12 @@ let bassFrequencies = [];
 let chordsFrequencies = [];
 let modeOffset = [];
 let rootNote;
-let sweepDuration;
 let isPlaying = false;
-let feedbackValueDelay = 0.3;
-let delayTime = bpm / (bpm * 2);
-
-lfo.frequency.value = bpm / 10000;
-lfo.type = "sine";
-lfoGain.gain.value = 100;
-lfo.start(audioCtx.currentTime);
+let feedbackValueDelay = 0.01;
+let delayTime;
+let randomizer;
+let filterFrequency = 7000;
+let filterFrequencyArrived = filterFrequency / 4;
 
 function initDrumMachine() {
   kick = kickBuffers[Math.floor(Math.random() * kickBuffers.length)];
@@ -152,10 +156,13 @@ function initScale() {
   rootNote = chromaticScale[Math.floor(Math.random() * chromaticScale.length)];
   modeOffset = modeOffsets[Math.floor(Math.random() * modeOffsets.length)];
   scale = createMode(rootNote, modeOffset);
-  bassScale = [scale[0], scale[2], scale[4], scale[5]];
+  bassScale = [scale[0], scale[2], scale[4], scale[3], scale[5], scale[6]];
   chords = [
-    [scale[0] + "3", scale[2] + "3", scale[4] + "3"],
+    [scale[0] + "3", scale[2] + "3", scale[3] + "3"],
     [scale[0] + "3", scale[3] + "3", scale[5] + "3"],
+    [scale[2] + "3", scale[4] + "3", scale[6] + "3"],
+    [scale[5] + "3", scale[0] + "4", scale[2] + "4"],
+    [scale[3] + "3", scale[5] + "3", scale[0] + "4"],
   ];
   for (const octave of octaves) {
     for (const note of scale) {
@@ -189,10 +196,10 @@ function initScale() {
 }
 
 function initTime() {
-  const numbers = [2, 3, 4, 5, 7, 9];
+  const numbers = [2, 3, 4];
   timeSignature = numbers[Math.floor(Math.random() * numbers.length)] * 4;
-  decayTime = (timeSignature / bpm) * 100;
-  sweepDuration = (timeSignature / bpm) * timeSignature;
+  delayTime = 0.5;
+  decayTime = 0.1;
 }
 
 function createMode(tonic, modeOffsets) {
@@ -215,9 +222,32 @@ function getRandomColor() {
 
 function playBass(frequency, duration, filter) {
   let oscillator = audioCtx.createOscillator();
+  let oscillator2 = audioCtx.createOscillator();
   let oscillateurGain = audioCtx.createGain();
+  let oscillateur2Gain = audioCtx.createGain();
 
   oscillator.type = "sine";
+  oscillator2.type = "sawtooth";
+
+  filter.type = "lowpass";
+  filter.frequency.value = filterFrequency;
+  filter.Q.value = 10;
+
+  filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
+
+  filter.frequency.linearRampToValueAtTime(
+    filter.frequency.value,
+    audioCtx.currentTime + attackTime
+  );
+  filter.frequency.linearRampToValueAtTime(
+    filterFrequencyArrived,
+    audioCtx.currentTime + attackTime + decayTime
+  );
+
+  filter.frequency.setValueAtTime(
+    filter.frequency.value,
+    audioCtx.currentTime + attackTime + decayTime * 10
+  );
 
   oscillateurGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
@@ -225,20 +255,42 @@ function playBass(frequency, duration, filter) {
     audioCtx.currentTime + duration
   );
 
+  oscillateur2Gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  oscillateur2Gain.gain.linearRampToValueAtTime(
+    0.1,
+    audioCtx.currentTime + duration
+  );
+
   oscillator.connect(oscillateurGain);
   oscillateurGain.connect(audioCtx.destination);
 
+  oscillator2.connect(oscillateur2Gain);
+  oscillateur2Gain.connect(filter);
+  filter.connect(delayNode);
+  delayNode.connect(feedbackGainNode);
+  feedbackGainNode.connect(delayNode);
+
+  filter.connect(audioCtx.destination);
+  delayNode.connect(audioCtx.destination);
+
   oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+  oscillator2.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
   oscillator.start(audioCtx.currentTime);
-
   oscillator.stop(audioCtx.currentTime + duration);
+
+  oscillator2.start(audioCtx.currentTime);
+  oscillator2.stop(audioCtx.currentTime + duration);
 
   setTimeout(() => {
     oscillator.disconnect();
     oscillateurGain.disconnect();
     oscillateurGain = null;
     oscillator = null;
+    oscillator2.disconnect();
+    oscillateur2Gain.disconnect();
+    oscillateur2Gain = null;
+    oscillator2 = null;
   }, duration * 1000);
 }
 
@@ -255,7 +307,7 @@ function playChord(frequencies, duration, filter) {
   oscillator3.type = "sawtooth";
 
   filter.type = "lowpass";
-  filter.frequency.value = 2500;
+  filter.frequency.value = filterFrequency;
   filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
@@ -265,8 +317,13 @@ function playChord(frequencies, duration, filter) {
     audioCtx.currentTime + attackTime
   );
   filter.frequency.linearRampToValueAtTime(
-    filter.frequency.value / 2,
+    filterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
+  );
+
+  filter.frequency.setValueAtTime(
+    filter.frequency.value,
+    audioCtx.currentTime + attackTime + decayTime * 10
   );
 
   oscillateurGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
@@ -299,8 +356,7 @@ function playChord(frequencies, duration, filter) {
   delayNode.connect(feedbackGainNode);
   feedbackGainNode.connect(delayNode);
 
-  lfo.connect(lfoGain);
-  lfoGain.connect(filter.frequency);
+  filter.connect(audioCtx.destination);
   delayNode.connect(audioCtx.destination);
 
   oscillator.frequency.setValueAtTime(frequencies[0], audioCtx.currentTime);
@@ -337,7 +393,7 @@ function playNote(frequency, duration, filter) {
   oscillator.type = "sawtooth";
 
   filter.type = "lowpass";
-  filter.frequency.value = 3000;
+  filter.frequency.value = filterFrequency;
   filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
@@ -347,8 +403,13 @@ function playNote(frequency, duration, filter) {
     audioCtx.currentTime + attackTime
   );
   filter.frequency.linearRampToValueAtTime(
-    filter.frequency.value / 2,
+    filterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
+  );
+
+  filter.frequency.setValueAtTime(
+    filter.frequency.value,
+    audioCtx.currentTime + attackTime + decayTime * 10
   );
 
   oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
@@ -367,8 +428,7 @@ function playNote(frequency, duration, filter) {
   delayNode.connect(feedbackGainNode);
   feedbackGainNode.connect(delayNode);
 
-  lfo.connect(lfoGain);
-  lfoGain.connect(filter.frequency);
+  filter.connect(audioCtx.destination);
   delayNode.connect(audioCtx.destination);
 
   oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
@@ -392,7 +452,7 @@ function playMelody(frequency, duration, filter) {
   oscillator.type = "square";
 
   filter.type = "lowpass";
-  filter.frequency.value = 3000;
+  filter.frequency.value = filterFrequency;
   filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
@@ -402,8 +462,13 @@ function playMelody(frequency, duration, filter) {
     audioCtx.currentTime + attackTime
   );
   filter.frequency.linearRampToValueAtTime(
-    filter.frequency.value / 2,
+    filterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
+  );
+
+  filter.frequency.setValueAtTime(
+    filter.frequency.value,
+    audioCtx.currentTime + attackTime + decayTime * 10
   );
 
   oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
@@ -422,8 +487,7 @@ function playMelody(frequency, duration, filter) {
   delayNode.connect(feedbackGainNode);
   feedbackGainNode.connect(delayNode);
 
-  lfo.connect(lfoGain);
-  lfoGain.connect(filter.frequency);
+  filter.connect(audioCtx.destination);
   delayNode.connect(audioCtx.destination);
 
   oscillator.frequency.setValueAtTime(frequency * 2, audioCtx.currentTime);
@@ -440,37 +504,6 @@ function playMelody(frequency, duration, filter) {
   }, duration * 1000);
 }
 
-function noiseSweep() {
-  let noiseOsc = audioCtx.createOscillator();
-  let noiseOscGain = audioCtx.createGain();
-  let targetFrequency = 10000;
-
-  noiseOsc.type = "sine";
-  noiseOsc.frequency.value = 1000;
-
-  noiseOsc.frequency.exponentialRampToValueAtTime(
-    targetFrequency,
-    audioCtx.currentTime + sweepDuration
-  );
-
-  noiseOsc.connect(noiseOscGain);
-  noiseOscGain.connect(delayNode);
-  delayNode.connect(feedbackGainNode);
-  feedbackGainNode.connect(delayNode);
-  noiseOscGain.gain.value = 0.1;
-  delayNode.connect(audioCtx.destination);
-  noiseOsc.start(audioCtx.currentTime);
-  noiseOsc.stop(audioCtx.currentTime + sweepDuration);
-  setTimeout(() => {
-    noiseOsc.disconnect();
-    noiseOscGain.disconnect();
-    noiseOscGain = null;
-    noiseOsc = null;
-    targetFrequency = null;
-    sweepDuration = null;
-  }, sweepDuration * 1000);
-}
-
 function playSequence() {
   draw();
   if (currentStep < timeSignature - 1) {
@@ -478,26 +511,54 @@ function playSequence() {
   } else {
     currentStep = 0;
     currentMeasure++;
-    if (currentMeasure === measures - 1) {
-      noiseSweep();
-      randomBreak();
-    }
-    if (currentMeasure === measures) {
-      noteArray = [];
-      bassArray = [];
-      chordArray = [];
-      melodyArray = [];
-      if (Math.random() < 0.1) {
-        initTime();
-        if (Math.random() < 0.4) {
-          initDrumMachine();
-        }
-      }
-      randomRiddim();
+    if (
+      currentMeasure === measures / 2 &&
+      Math.random() < 0.3 &&
+      currentSongDuration > 4
+    ) {
       noteArray = generateRandomNoteSequence(frequencies);
       bassArray = generateRandomBass(bassFrequencies);
       chordArray = generateRandomChordSequence(chordsFrequencies);
       melodyArray = generateRandomMelody(frequencies);
+      let gainNode = audioCtx.createGain();
+      cy = audioCtx.createBufferSource();
+      cy.buffer = cyBuffers[0];
+      gainNode.gain.value = 1;
+      cy.connect(gainNode).connect(audioCtx.destination);
+      cy.start(audioCtx.currentTime);
+      cy.stop(audioCtx.currentTime + timeSignature);
+      setTimeout(() => {
+        cy.disconnect();
+        gainNode.disconnect();
+      }, timeSignature * 100);
+    }
+    if (currentMeasure === measures - 1) {
+      randomBreak();
+    }
+    if (currentMeasure === measures) {
+      randomRiddim();
+      if (currentSongDuration > 1) {
+        noteArray = [];
+        bassArray = [];
+        chordArray = [];
+        melodyArray = [];
+        if (Math.random() < 0.1 && currentSongDuration > 4) {
+          initTime();
+        }
+        if (Math.random() < 0.03 && currentSongDuration > 4) {
+          initScale();
+        }
+        noteArray = generateRandomNoteSequence(frequencies);
+        bassArray = generateRandomBass(bassFrequencies);
+        chordArray = generateRandomChordSequence(chordsFrequencies);
+        melodyArray = generateRandomMelody(frequencies);
+        if (Math.random() < 0.2 && currentSongDuration > 12) {
+          noteArray = noteThemeArray;
+          bassArray = bassThemeArray;
+          chordArray = chordThemeArray;
+          melodyArray = melodyThemeArray;
+        }
+      }
       currentMeasure = 0;
       currentSongDuration++;
       if (currentSongDuration > 0) {
@@ -518,14 +579,17 @@ function playSequence() {
       currentSongDuration = 0;
       currentMeasure = 0;
       currentSong++;
-      bpm += 2;
       initTime();
       initScale();
       initDrumMachine();
-      noteArray = generateRandomNoteSequence(frequencies);
-      bassArray = generateRandomBass(bassFrequencies);
-      chordArray = generateRandomChordSequence(chordsFrequencies);
-      melodyArray = generateRandomMelody(frequencies);
+      noteThemeArray = generateRandomNoteSequence(frequencies);
+      noteArray = noteThemeArray;
+      bassThemeArray = generateRandomBass(bassFrequencies);
+      bassArray = bassThemeArray;
+      chordThemeArray = generateRandomChordSequence(chordsFrequencies);
+      chordArray = chordThemeArray;
+      melodyThemeArray = generateRandomMelody(frequencies);
+      melodyArray = melodyThemeArray;
       if (currentSong === songs) {
         currentSong = 0;
         timer.stop();
@@ -567,7 +631,8 @@ function playSequence() {
       let gainNode = audioCtx.createGain();
       snareBuffer = audioCtx.createBufferSource();
       snareBuffer.buffer = snare;
-      gainNode.gain.value = 1;
+      gainNode.gain.value =
+        velocities[Math.floor(Math.random() * velocities.length)];
       snareBuffer.connect(gainNode).connect(audioCtx.destination);
       snareBuffer.start(audioCtx.currentTime);
       snareBuffer.stop(audioCtx.currentTime + timeSignature);
@@ -621,7 +686,26 @@ function playSequence() {
       filter
     );
   }
-  if (Math.random() < 0.5) {
+  randomizer = Math.random();
+  if (randomizer < 0.8) {
+    if (Math.random() < 0.5) {
+      if (noteArray[currentStep] != null) {
+        playNote(
+          noteArray[currentStep].note,
+          noteArray[currentStep].duration,
+          filter
+        );
+      }
+    } else {
+      if (melodyArray[currentStep] != null) {
+        playMelody(
+          melodyArray[currentStep].note,
+          melodyArray[currentStep].duration,
+          filter
+        );
+      }
+    }
+  } else if (randomizer >= 0.8 && randomizer < 0.9) {
     if (noteArray[currentStep] != null) {
       playNote(
         noteArray[currentStep].note,
@@ -629,7 +713,7 @@ function playSequence() {
         filter
       );
     }
-  } else {
+  } else if (randomizer >= 0.9) {
     if (melodyArray[currentStep] != null) {
       playMelody(
         melodyArray[currentStep].note,
@@ -642,10 +726,14 @@ function playSequence() {
 
 function loop() {
   randomRiddim();
-  noteArray = generateRandomNoteSequence(frequencies);
-  bassArray = generateRandomBass(bassFrequencies);
-  chordArray = generateRandomChordSequence(chordsFrequencies);
-  melodyArray = generateRandomMelody(frequencies);
+  noteThemeArray = generateRandomNoteSequence(frequencies);
+  noteArray = noteThemeArray;
+  bassThemeArray = generateRandomBass(bassFrequencies);
+  bassArray = bassThemeArray;
+  chordThemeArray = generateRandomChordSequence(chordsFrequencies);
+  chordArray = chordThemeArray;
+  melodyThemeArray = generateRandomMelody(frequencies);
+  melodyArray = melodyThemeArray;
   timer.callback = playSequence;
   timer.timeInterval = (6000 / bpm / 4) * 10;
   timer.errorCallback = "error";
@@ -658,7 +746,7 @@ function randomRiddim() {
   snaresArray = [];
   clsArray = [];
   ohhsArray = [];
-  const randomIndex = Math.floor(Math.random() * 4);
+  const randomIndex = Math.floor(Math.random() * 10);
   switch (randomIndex) {
     case 0:
       for (let i = 0; i < timeSignature; i++) {
@@ -696,13 +784,22 @@ function randomRiddim() {
         ohhsArray.push(false);
       }
       break;
+    case 4:
+      for (let i = 0; i < timeSignature; i++) {
+        kicksArray.push(false);
+        chhsArray.push(false);
+        snaresArray.push(false);
+        clsArray.push(false);
+        ohhsArray.push(false);
+      }
+      break;
     default:
       for (let i = 0; i < timeSignature; i++) {
         kicksArray.push(Math.random() < 0.3);
-        chhsArray.push(Math.random() < 0.7);
-        snaresArray.push(Math.random() < 0.3);
+        chhsArray.push(Math.random() < 0.9);
+        snaresArray.push(Math.random() < 0.2);
         clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(Math.random() < 0.2);
+        ohhsArray.push(Math.random() < 0.1);
       }
       break;
   }
