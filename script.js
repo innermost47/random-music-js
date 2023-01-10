@@ -70,6 +70,10 @@ const modeOffsets = [
   lydianModeOffsets,
   ionianModeOffsets,
   mixolydianModeOffsets,
+  arabian,
+  gipsy,
+  harmonicMinor,
+  arabianDorian,
 ];
 
 const timer = new Timer();
@@ -137,12 +141,12 @@ let feedbackValueDelay = 0;
 let delayTime = 0.5;
 let randomizer;
 let bassFilterFrequency = 6000;
-let bassFilterFrequencyArrived = bassFilterFrequency / 2;
-let chordFilterFrequency = 6000;
+let bassFilterFrequencyArrived = bassFilterFrequency / 4;
+let chordFilterFrequency = 4000;
 let chordFilterFrequencyArrived = chordFilterFrequency / 4;
-let noteFilterFrequency = 6000;
+let noteFilterFrequency = 4000;
 let noteFilterFrequencyArrived = noteFilterFrequency / 4;
-let melodyFilterFrequency = 6000;
+let melodyFilterFrequency = 4000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 4;
 
 delayNode.delayTime.value = delayTime;
@@ -192,6 +196,38 @@ function initScale() {
     const frequency = NOTES_JSON[note];
     return frequency;
   });
+
+  bassFrequencies = bassNotes.map((note) => {
+    const frequency = NOTES_JSON[note];
+    return frequency;
+  });
+
+  chordsFrequencies = chords.map((chord) => {
+    let frequency = [];
+    for (let i = 0; i < chord.length; i++) {
+      frequency.push(NOTES_JSON[chord[i]]);
+    }
+    return frequency;
+  });
+}
+
+function createBassAndChords() {
+  bassFrequencies = [];
+  chordsFrequencies = [];
+  bassScale = [];
+  bassNotes = [];
+
+  for (let i = 0; i < 4; i++) {
+    let note = scale[Math.floor(Math.random() * scale.length)];
+    bassScale.push(note);
+  }
+  chords = [[bassScale[0] + "3", bassScale[2] + "3", bassScale[3] + "3"]];
+
+  for (const bassOctave of bassOctaves) {
+    for (const note of bassScale) {
+      bassNotes.push(`${note}${bassOctave}`);
+    }
+  }
 
   bassFrequencies = bassNotes.map((note) => {
     const frequency = NOTES_JSON[note];
@@ -490,11 +526,17 @@ function playSequence() {
   } else {
     currentStep = 0;
     currentMeasure++;
+    if (currentMeasure === measures / 2) {
+      createBassAndChords();
+      bassArray = generateRandomBass(bassFrequencies);
+      chordArray = generateRandomChordSequence(chordsFrequencies);
+    }
     if (
       currentMeasure === measures / 2 &&
       Math.random() < 0.3 &&
       currentSongDuration > 4
     ) {
+      createBassAndChords();
       noteArray = generateRandomNoteSequence(frequencies);
       bassArray = generateRandomBass(bassFrequencies);
       chordArray = generateRandomChordSequence(chordsFrequencies);
@@ -527,6 +569,7 @@ function playSequence() {
         if (Math.random() < 0.03 && currentSongDuration > 4) {
           initScale();
         }
+        createBassAndChords();
         noteArray = generateRandomNoteSequence(frequencies);
         bassArray = generateRandomBass(bassFrequencies);
         chordArray = generateRandomChordSequence(chordsFrequencies);
@@ -561,6 +604,7 @@ function playSequence() {
       initTime();
       initScale();
       initDrumMachine();
+      createBassAndChords();
       noteThemeArray = generateRandomNoteSequence(frequencies);
       noteArray = noteThemeArray;
       bassThemeArray = generateRandomBass(bassFrequencies);
@@ -705,6 +749,7 @@ function playSequence() {
 
 function loop() {
   randomRiddim();
+  createBassAndChords();
   noteThemeArray = generateRandomNoteSequence(frequencies);
   noteArray = noteThemeArray;
   bassThemeArray = generateRandomBass(bassFrequencies);
