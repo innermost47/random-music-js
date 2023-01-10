@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Random Music JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta
+      name="description"
+      content="Découvrez notre application de musique
+  électronique aléatoire générée par le chaos. Cliquez simplement sur le
+  bouton PLAY et laissez-vous transporter par notre signature rythmique
+  aléatoire, qui varie entre 3, 4, 5, 7 et 9 temps. Le BPM démarre à 90 et
+  augmente progressivement à chaque fin de morceau. Le drum set est généré
+  aléatoirement à partir d'une bibliothèque de samples, tandis qu'un
+  synthétiseur gère la basse, un autre les accords et deux autres la mélodie.
+  Toutes les 8 mesures, de nouvelles parties mélodiques et rythmiques sont
+  générées. Nous utilisons l'API Web Audio de JavaScript pour créer cette
+  expérience musicale immersive et unique. Venez essayer dès maintenant!"
+    />
+    <meta property="og:title" content="Random Music JS" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://random-music-js.inner-most.fr/logo.png"
+    />
+    <meta
+      property="og:description"
+      content="Découvrez notre application de musique
+    électronique aléatoire générée par le chaos. Cliquez simplement sur le
+    bouton PLAY et laissez-vous transporter par notre signature rythmique
+    aléatoire, qui varie entre 3, 4, 5, 7 et 9 temps. Le BPM démarre à 90 et
+    augmente progressivement à chaque fin de morceau. Le drum set est généré
+    aléatoirement à partir d'une bibliothèque de samples, tandis qu'un
+    synthétiseur gère la basse, un autre les accords et deux autres la mélodie.
+    Toutes les 8 mesures, de nouvelles parties mélodiques et rythmiques sont
+    générées. Nous utilisons l'API Web Audio de JavaScript pour créer cette
+    expérience musicale immersive et unique. Venez essayer dès maintenant!"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rowdies&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main>
+      <h1>Random Music JS</h1>
+      <canvas id="canva" width="600" height="220"></canvas>
+    </main>
+    <div class="controls">
+      <button id="play">Play</button>
+      <button id="stop">Stop</button>
+    </div>
+    <script src="Timer.js" type="module"></script>
+    <script src="notes.js" type="module"></script>
+    <script src="script.js" type="module"></script>
+  </body>
+</html>
