@@ -85,7 +85,7 @@ const play = document.getElementById("play");
 const stop = document.getElementById("stop");
 const canvas = document.getElementById("canva");
 const ctx = canvas.getContext("2d");
-const velocities = [0.5, 1];
+const velocities = [0.3, 1];
 
 let currentStep = 0;
 let bpm = 90;
@@ -130,11 +130,14 @@ let chordsFrequencies = [];
 let modeOffset = [];
 let rootNote;
 let isPlaying = false;
-let feedbackValueDelay = 0.01;
-let delayTime;
+let feedbackValueDelay = 0;
+let delayTime = 0.5;
 let randomizer;
-let filterFrequency = 7000;
+let filterFrequency = 6000;
 let filterFrequencyArrived = filterFrequency / 4;
+
+delayNode.delayTime.value = delayTime;
+feedbackGainNode.gain.value = feedbackValueDelay;
 
 function initDrumMachine() {
   kick = kickBuffers[Math.floor(Math.random() * kickBuffers.length)];
@@ -198,7 +201,6 @@ function initScale() {
 function initTime() {
   const numbers = [2, 3, 4];
   timeSignature = numbers[Math.floor(Math.random() * numbers.length)] * 4;
-  delayTime = 0.5;
   decayTime = 0.1;
 }
 
@@ -242,11 +244,6 @@ function playBass(frequency, duration, filter) {
   filter.frequency.linearRampToValueAtTime(
     filterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
-  );
-
-  filter.frequency.setValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime + decayTime * 10
   );
 
   oscillateurGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
@@ -321,11 +318,6 @@ function playChord(frequencies, duration, filter) {
     audioCtx.currentTime + attackTime + decayTime
   );
 
-  filter.frequency.setValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime + decayTime * 10
-  );
-
   oscillateurGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
     0,
@@ -341,10 +333,6 @@ function playChord(frequencies, duration, filter) {
     0,
     audioCtx.currentTime + duration
   );
-
-  delayNode.delayTime.value = delayTime;
-
-  feedbackGainNode.gain.value = feedbackValueDelay;
 
   oscillator.connect(oscillateurGain);
   oscillator2.connect(oscillateur2Gain);
@@ -407,20 +395,11 @@ function playNote(frequency, duration, filter) {
     audioCtx.currentTime + attackTime + decayTime
   );
 
-  filter.frequency.setValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime + decayTime * 10
-  );
-
   oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
     0,
     audioCtx.currentTime + duration
   );
-
-  delayNode.delayTime.value = delayTime;
-
-  feedbackGainNode.gain.value = feedbackValueDelay;
 
   oscillator.connect(oscillateurGain);
   oscillateurGain.connect(filter);
@@ -466,20 +445,11 @@ function playMelody(frequency, duration, filter) {
     audioCtx.currentTime + attackTime + decayTime
   );
 
-  filter.frequency.setValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime + decayTime * 10
-  );
-
   oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
     0,
     audioCtx.currentTime + duration / 2
   );
-
-  delayNode.delayTime.value = delayTime;
-
-  feedbackGainNode.gain.value = feedbackValueDelay;
 
   oscillator.connect(oscillateurGain);
   oscillateurGain.connect(filter);
