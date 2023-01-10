@@ -73,7 +73,10 @@ const modeOffsets = [
 ];
 
 const timer = new Timer();
-const filter = audioCtx.createBiquadFilter();
+const bassFilter = audioCtx.createBiquadFilter();
+const noteFilter = audioCtx.createBiquadFilter();
+const chordFilter = audioCtx.createBiquadFilter();
+const melodyFilter = audioCtx.createBiquadFilter();
 const delayNode = audioCtx.createDelay();
 const feedbackGainNode = audioCtx.createGain();
 const octaves = [3, 4];
@@ -133,8 +136,14 @@ let isPlaying = false;
 let feedbackValueDelay = 0;
 let delayTime = 0.5;
 let randomizer;
-let filterFrequency = 6000;
-let filterFrequencyArrived = filterFrequency / 4;
+let bassFilterFrequency = 6000;
+let bassFilterFrequencyArrived = bassFilterFrequency / 2;
+let chordFilterFrequency = 6000;
+let chordFilterFrequencyArrived = chordFilterFrequency / 4;
+let noteFilterFrequency = 6000;
+let noteFilterFrequencyArrived = noteFilterFrequency / 4;
+let melodyFilterFrequency = 6000;
+let melodyFilterFrequencyArrived = melodyFilterFrequency / 4;
 
 delayNode.delayTime.value = delayTime;
 feedbackGainNode.gain.value = feedbackValueDelay;
@@ -201,7 +210,7 @@ function initScale() {
 function initTime() {
   const numbers = [2, 3, 4];
   timeSignature = numbers[Math.floor(Math.random() * numbers.length)] * 4;
-  decayTime = 0.1;
+  decayTime = 0.2;
 }
 
 function createMode(tonic, modeOffsets) {
@@ -232,7 +241,7 @@ function playBass(frequency, duration, filter) {
   oscillator2.type = "sawtooth";
 
   filter.type = "lowpass";
-  filter.frequency.value = filterFrequency;
+  filter.frequency.value = bassFilterFrequency;
   filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
@@ -242,7 +251,7 @@ function playBass(frequency, duration, filter) {
     audioCtx.currentTime + attackTime
   );
   filter.frequency.linearRampToValueAtTime(
-    filterFrequencyArrived,
+    bassFilterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
   );
 
@@ -304,7 +313,7 @@ function playChord(frequencies, duration, filter) {
   oscillator3.type = "sawtooth";
 
   filter.type = "lowpass";
-  filter.frequency.value = filterFrequency;
+  filter.frequency.value = chordFilterFrequency;
   filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
@@ -314,7 +323,7 @@ function playChord(frequencies, duration, filter) {
     audioCtx.currentTime + attackTime
   );
   filter.frequency.linearRampToValueAtTime(
-    filterFrequencyArrived,
+    chordFilterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
   );
 
@@ -381,7 +390,7 @@ function playNote(frequency, duration, filter) {
   oscillator.type = "sawtooth";
 
   filter.type = "lowpass";
-  filter.frequency.value = filterFrequency;
+  filter.frequency.value = noteFilterFrequency;
   filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
@@ -391,7 +400,7 @@ function playNote(frequency, duration, filter) {
     audioCtx.currentTime + attackTime
   );
   filter.frequency.linearRampToValueAtTime(
-    filterFrequencyArrived,
+    noteFilterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
   );
 
@@ -431,7 +440,7 @@ function playMelody(frequency, duration, filter) {
   oscillator.type = "square";
 
   filter.type = "lowpass";
-  filter.frequency.value = filterFrequency;
+  filter.frequency.value = melodyFilterFrequency;
   filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
@@ -441,7 +450,7 @@ function playMelody(frequency, duration, filter) {
     audioCtx.currentTime + attackTime
   );
   filter.frequency.linearRampToValueAtTime(
-    filterFrequencyArrived,
+    melodyFilterFrequencyArrived,
     audioCtx.currentTime + attackTime + decayTime
   );
 
@@ -645,7 +654,7 @@ function playSequence() {
       playBass(
         bassArray[currentStep].note,
         bassArray[currentStep].duration,
-        filter
+        bassFilter
       );
     }
   }
@@ -653,7 +662,7 @@ function playSequence() {
     playChord(
       chordArray[currentStep].note,
       chordArray[currentStep].duration,
-      filter
+      chordFilter
     );
   }
   randomizer = Math.random();
@@ -663,7 +672,7 @@ function playSequence() {
         playNote(
           noteArray[currentStep].note,
           noteArray[currentStep].duration,
-          filter
+          noteFilter
         );
       }
     } else {
@@ -671,7 +680,7 @@ function playSequence() {
         playMelody(
           melodyArray[currentStep].note,
           melodyArray[currentStep].duration,
-          filter
+          melodyFilter
         );
       }
     }
@@ -680,7 +689,7 @@ function playSequence() {
       playNote(
         noteArray[currentStep].note,
         noteArray[currentStep].duration,
-        filter
+        noteFilter
       );
     }
   } else if (randomizer >= 0.9) {
@@ -688,7 +697,7 @@ function playSequence() {
       playMelody(
         melodyArray[currentStep].note,
         melodyArray[currentStep].duration,
-        filter
+        melodyFilter
       );
     }
   }
