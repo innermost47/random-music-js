@@ -125,6 +125,8 @@ let chords = [];
 let allNotes = [];
 let bassNotes = [];
 let frequencies = [];
+let melodyFrequencies = [];
+let melodyNotes = [];
 let bassFrequencies = [];
 let chordsFrequencies = [];
 let modeOffset = [];
@@ -163,6 +165,8 @@ function initScale() {
   frequencies = [];
   bassFrequencies = [];
   chordsFrequencies = [];
+  melodyFrequencies = [];
+  melodyNotes = [];
   rootNote = chromaticScale[Math.floor(Math.random() * chromaticScale.length)];
   modeOffset = modeOffsets[Math.floor(Math.random() * modeOffsets.length)];
   scale = createMode(rootNote, modeOffset);
@@ -170,6 +174,18 @@ function initScale() {
   chords = [
     [scale[0] + "2", scale[2] + "2", scale[4] + "2"],
     [scale[0] + "2", scale[2] + "2", scale[6] + "2"],
+  ];
+  melodyNotes = [
+    scale[0] + "3",
+    scale[2] + "3",
+    scale[3] + "3",
+    scale[4] + "3",
+    scale[6] + "3",
+    scale[0] + "4",
+    scale[2] + "4",
+    scale[3] + "4",
+    scale[4] + "4",
+    scale[6] + "4",
   ];
   for (const octave of octaves) {
     for (const note of scale) {
@@ -184,6 +200,11 @@ function initScale() {
   }
 
   frequencies = allNotes.map((note) => {
+    const frequency = NOTES_JSON[note];
+    return frequency;
+  });
+
+  melodyFrequencies = melodyNotes.map((note) => {
     const frequency = NOTES_JSON[note];
     return frequency;
   });
@@ -205,6 +226,7 @@ function initScale() {
 function createBassAndChords() {
   bassFrequencies = [];
   chordsFrequencies = [];
+  melodyFrequencies = [];
   let random = Math.random();
   switch (true) {
     case random < 1 / 7:
@@ -218,6 +240,18 @@ function createBassAndChords() {
         [bassNotes[0], bassNotes[1], bassNotes[2]],
         [bassNotes[0], bassNotes[1], bassNotes[3]],
       ];
+      melodyNotes = [
+        scale[0] + "3",
+        scale[2] + "3",
+        scale[3] + "3",
+        scale[4] + "3",
+        scale[5] + "3",
+        scale[0] + "4",
+        scale[2] + "4",
+        scale[3] + "4",
+        scale[4] + "4",
+        scale[5] + "4",
+      ];
       break;
     case random >= 1 / 7 && random < 2 / 7:
       bassNotes = [
@@ -229,6 +263,18 @@ function createBassAndChords() {
       chords = [
         [bassNotes[0], bassNotes[1], bassNotes[2]],
         [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      melodyNotes = [
+        scale[1] + "3",
+        scale[3] + "3",
+        scale[4] + "3",
+        scale[5] + "3",
+        scale[0] + "4",
+        scale[1] + "4",
+        scale[3] + "4",
+        scale[4] + "4",
+        scale[5] + "4",
+        scale[0] + "5",
       ];
       break;
     case random >= 2 / 7 && random < 3 / 7:
@@ -242,6 +288,18 @@ function createBassAndChords() {
         [bassNotes[0], bassNotes[1], bassNotes[2]],
         [bassNotes[0], bassNotes[1], bassNotes[3]],
       ];
+      melodyNotes = [
+        scale[2] + "3",
+        scale[4] + "3",
+        scale[4] + "3",
+        scale[6] + "3",
+        scale[1] + "4",
+        scale[2] + "4",
+        scale[4] + "4",
+        scale[4] + "4",
+        scale[6] + "4",
+        scale[1] + "5",
+      ];
       break;
     case random >= 3 / 7 && random < 4 / 7:
       bassNotes = [
@@ -253,6 +311,18 @@ function createBassAndChords() {
       chords = [
         [bassNotes[0], bassNotes[1], bassNotes[2]],
         [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      melodyNotes = [
+        scale[3] + "2",
+        scale[5] + "2",
+        scale[6] + "2",
+        scale[0] + "3",
+        scale[2] + "3",
+        scale[3] + "3",
+        scale[5] + "3",
+        scale[6] + "3",
+        scale[0] + "4",
+        scale[2] + "4",
       ];
       break;
     case random >= 4 / 7 && random < 5 / 7:
@@ -266,6 +336,18 @@ function createBassAndChords() {
         [bassNotes[0], bassNotes[1], bassNotes[2]],
         [bassNotes[0], bassNotes[1], bassNotes[3]],
       ];
+      melodyNotes = [
+        scale[4] + "2",
+        scale[6] + "2",
+        scale[0] + "3",
+        scale[1] + "3",
+        scale[3] + "3",
+        scale[4] + "3",
+        scale[6] + "3",
+        scale[0] + "4",
+        scale[1] + "4",
+        scale[3] + "4",
+      ];
       break;
     case random >= 5 / 7 && random < 6 / 7:
       bassNotes = [
@@ -277,6 +359,18 @@ function createBassAndChords() {
       chords = [
         [bassNotes[0], bassNotes[1], bassNotes[2]],
         [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      melodyNotes = [
+        scale[5] + "2",
+        scale[0] + "3",
+        scale[1] + "3",
+        scale[2] + "3",
+        scale[4] + "3",
+        scale[5] + "3",
+        scale[0] + "4",
+        scale[1] + "4",
+        scale[2] + "4",
+        scale[4] + "4",
       ];
       break;
     case random >= 6 / 7 && random < 7 / 7:
@@ -290,10 +384,27 @@ function createBassAndChords() {
         [bassNotes[0], bassNotes[1], bassNotes[2]],
         [bassNotes[0], bassNotes[1], bassNotes[3]],
       ];
+      melodyNotes = [
+        scale[6] + "2",
+        scale[1] + "3",
+        scale[2] + "3",
+        scale[3] + "3",
+        scale[5] + "3",
+        scale[6] + "3",
+        scale[1] + "4",
+        scale[2] + "4",
+        scale[3] + "4",
+        scale[5] + "4",
+      ];
       break;
   }
 
   bassFrequencies = bassNotes.map((note) => {
+    const frequency = NOTES_JSON[note];
+    return frequency;
+  });
+
+  melodyFrequencies = melodyNotes.map((note) => {
     const frequency = NOTES_JSON[note];
     return frequency;
   });
@@ -597,10 +708,7 @@ function playSequence() {
       currentSongDuration > 4
     ) {
       createBassAndChords();
-      noteArray = generateRandomNoteSequence(frequencies);
-      bassArray = generateRandomBass(bassFrequencies);
-      chordArray = generateRandomChordSequence(chordsFrequencies);
-      melodyArray = generateRandomMelody(frequencies);
+      generateNextMusicalColor();
       playPercussionWithVelocity(cy, 1);
     }
     if (currentMeasure === measures - 1) {
@@ -625,10 +733,7 @@ function playSequence() {
         if (currentSongDuration > 3) {
           randomizer = Math.random();
         }
-        noteArray = generateRandomNoteSequence(frequencies);
-        bassArray = generateRandomBass(bassFrequencies);
-        chordArray = generateRandomChordSequence(chordsFrequencies);
-        melodyArray = generateRandomMelody(frequencies);
+        generateNextMusicalColor();
         if (Math.random() < 0.2 && currentSongDuration > 12) {
           noteArray = noteThemeArray;
           bassArray = bassThemeArray;
@@ -748,6 +853,13 @@ function playSequence() {
   }
 }
 
+function generateNextMusicalColor() {
+  noteArray = generateRandomNoteSequence(melodyFrequencies);
+  bassArray = generateRandomBass(bassFrequencies);
+  chordArray = generateRandomChordSequence(chordsFrequencies);
+  melodyArray = generateRandomMelody(melodyFrequencies);
+}
+
 function playPercussionWithVelocity(buffer, velocity) {
   let gainNode = audioCtx.createGain();
   let percBuffer = audioCtx.createBufferSource();
@@ -763,13 +875,13 @@ function playPercussionWithVelocity(buffer, velocity) {
 }
 
 function createTheme() {
-  noteThemeArray = generateRandomNoteSequence(frequencies);
+  noteThemeArray = generateRandomNoteSequence(melodyFrequencies);
   noteArray = noteThemeArray;
   bassThemeArray = generateRandomBass(bassFrequencies);
   bassArray = bassThemeArray;
   chordThemeArray = generateRandomChordSequence(chordsFrequencies);
   chordArray = chordThemeArray;
-  melodyThemeArray = generateRandomMelody(frequencies);
+  melodyThemeArray = generateRandomMelody(melodyFrequencies);
   melodyArray = melodyThemeArray;
 }
 
