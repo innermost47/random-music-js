@@ -71,8 +71,6 @@ const modeOffsets = [
   ionianModeOffsets,
   mixolydianModeOffsets,
   arabian,
-  gipsy,
-  harmonicMinor,
   arabianDorian,
 ];
 
@@ -142,8 +140,8 @@ let delayTime = 0.5;
 let randomizer;
 let bassFilterFrequency = 6000;
 let bassFilterFrequencyArrived = bassFilterFrequency / 4;
-let chordFilterFrequency = 4000;
-let chordFilterFrequencyArrived = chordFilterFrequency / 2;
+let chordFilterFrequency = 8000;
+let chordFilterFrequencyArrived = chordFilterFrequency;
 let noteFilterFrequency = 4000;
 let noteFilterFrequencyArrived = noteFilterFrequency / 2;
 let melodyFilterFrequency = 6000;
@@ -255,7 +253,7 @@ function createBassAndChords() {
 function initTime() {
   const numbers = [2, 3, 4];
   timeSignature = numbers[Math.floor(Math.random() * numbers.length)] * 4;
-  decayTime = 0.2;
+  decayTime = 0.1;
 }
 
 function createMode(tonic, modeOffsets) {
@@ -707,7 +705,10 @@ function playSequence() {
       );
     }
   }
-  if (chordArray[currentStep].note) {
+  if (
+    chordArray[currentStep].note &&
+    chordArray[currentStep].note != undefined
+  ) {
     playChord(
       chordArray[currentStep].note,
       chordArray[currentStep].duration,
