@@ -601,7 +601,7 @@ function playSequence() {
       bassArray = generateRandomBass(bassFrequencies);
       chordArray = generateRandomChordSequence(chordsFrequencies);
       melodyArray = generateRandomMelody(frequencies);
-      playPercussion(cy);
+      playPercussionWithVelocity(cy, 1);
     }
     if (currentMeasure === measures - 1) {
       randomBreak();
@@ -639,7 +639,7 @@ function playSequence() {
       currentMeasure = 0;
       currentSongDuration++;
       if (currentSongDuration > 0) {
-        playPercussion(cy);
+        playPercussionWithVelocity(cy, 1);
       }
     }
     if (currentSongDuration === songDuration) {
@@ -667,19 +667,31 @@ function playSequence() {
     kicksArray[currentStep] ||
     (currentStep == 0 && currentSongDuration > 0)
   ) {
-    playPercussion(kick);
+    playPercussionWithVelocity(kick, 1);
   }
   if (chhsArray[currentStep]) {
-    playPercussionWithVelocity(chh);
+    playPercussionWithVelocity(
+      chh,
+      velocities[Math.floor(Math.random() * velocities.length)]
+    );
   }
   if (snaresArray[currentStep]) {
-    playPercussionWithVelocity(snare);
+    playPercussionWithVelocity(
+      snare,
+      velocities[Math.floor(Math.random() * velocities.length)]
+    );
   }
   if (ohhsArray[currentStep]) {
-    playPercussionWithVelocity(ohh);
+    playPercussionWithVelocity(
+      ohh,
+      velocities[Math.floor(Math.random() * velocities.length)]
+    );
   }
   if (clsArray[currentStep]) {
-    playPercussionWithVelocity(cl);
+    playPercussionWithVelocity(
+      cl,
+      velocities[Math.floor(Math.random() * velocities.length)]
+    );
   }
   if (currentSongDuration > 0) {
     if (bassArray[currentStep] != null) {
@@ -736,26 +748,11 @@ function playSequence() {
   }
 }
 
-function playPercussion(buffer) {
+function playPercussionWithVelocity(buffer, velocity) {
   let gainNode = audioCtx.createGain();
   let percBuffer = audioCtx.createBufferSource();
   percBuffer.buffer = buffer;
-  gainNode.gain.value = 1;
-  percBuffer.connect(gainNode).connect(audioCtx.destination);
-  percBuffer.start(audioCtx.currentTime);
-  percBuffer.stop(audioCtx.currentTime + timeSignature);
-  setTimeout(() => {
-    percBuffer.disconnect();
-    gainNode.disconnect();
-  }, timeSignature * 100);
-}
-
-function playPercussionWithVelocity(buffer) {
-  let gainNode = audioCtx.createGain();
-  let percBuffer = audioCtx.createBufferSource();
-  percBuffer.buffer = buffer;
-  gainNode.gain.value =
-    velocities[Math.floor(Math.random() * velocities.length)];
+  gainNode.gain.value = velocity;
   percBuffer.connect(gainNode).connect(audioCtx.destination);
   percBuffer.start(audioCtx.currentTime);
   percBuffer.stop(audioCtx.currentTime + timeSignature);
