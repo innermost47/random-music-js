@@ -137,7 +137,7 @@ let rootNote;
 let isPlaying = false;
 let feedbackValueDelay = 0;
 let delayTime = 0.5;
-let randomizer;
+let randomizer = Math.random();
 let bassFilterFrequency = 3000;
 let bassFilterFrequencyArrived = bassFilterFrequency / 4;
 let chordFilterFrequency = 8000;
@@ -146,7 +146,6 @@ let noteFilterFrequency = 4000;
 let noteFilterFrequencyArrived = noteFilterFrequency / 2;
 let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
-let newChord = false;
 
 delayNode.delayTime.value = delayTime;
 feedbackGainNode.gain.value = feedbackValueDelay;
@@ -362,12 +361,12 @@ function playBass(frequency, duration, filter) {
 
   oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
-    0.1,
+    0,
     audioCtx.currentTime + duration
   );
   oscillateur2Gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
   oscillateur2Gain.gain.linearRampToValueAtTime(
-    0.1,
+    0,
     audioCtx.currentTime + duration
   );
 
@@ -606,18 +605,7 @@ function playSequence() {
       bassArray = generateRandomBass(bassFrequencies);
       chordArray = generateRandomChordSequence(chordsFrequencies);
       melodyArray = generateRandomMelody(frequencies);
-      let gainNode = audioCtx.createGain();
-      cy = audioCtx.createBufferSource();
-      cy.buffer = cyBuffers[0];
-      gainNode.gain.value = 1;
-      cy.connect(gainNode).connect(audioCtx.destination);
-      cy.start(audioCtx.currentTime);
-      cy.stop(audioCtx.currentTime + timeSignature);
-      newChord = false;
-      setTimeout(() => {
-        cy.disconnect();
-        gainNode.disconnect();
-      }, timeSignature * 100);
+      playPercussion(cy);
     }
     if (currentMeasure === measures - 1) {
       randomBreak();
@@ -638,6 +626,9 @@ function playSequence() {
         if (currentSongDuration > 4 && Math.random() < 0.4) {
           createBassAndChords();
         }
+        if (currentSongDuration > 3) {
+          randomizer = Math.random();
+        }
         noteArray = generateRandomNoteSequence(frequencies);
         bassArray = generateRandomBass(bassFrequencies);
         chordArray = generateRandomChordSequence(chordsFrequencies);
@@ -652,17 +643,7 @@ function playSequence() {
       currentMeasure = 0;
       currentSongDuration++;
       if (currentSongDuration > 0) {
-        let gainNode = audioCtx.createGain();
-        cy = audioCtx.createBufferSource();
-        cy.buffer = cyBuffers[0];
-        gainNode.gain.value = 1;
-        cy.connect(gainNode).connect(audioCtx.destination);
-        cy.start(audioCtx.currentTime);
-        cy.stop(audioCtx.currentTime + timeSignature);
-        setTimeout(() => {
-          cy.disconnect();
-          gainNode.disconnect();
-        }, timeSignature * 100);
+        playPercussion(cy);
       }
     }
     if (currentSongDuration === songDuration) {
@@ -672,17 +653,17 @@ function playSequence() {
       initTime();
       initScale();
       initDrumMachine();
-      noteThemeArray = generateRandomNoteSequence(frequencies);
-      noteArray = noteThemeArray;
-      bassThemeArray = generateRandomBass(bassFrequencies);
-      bassArray = bassThemeArray;
-      chordThemeArray = generateRandomChordSequence(chordsFrequencies);
-      chordArray = chordThemeArray;
-      melodyThemeArray = generateRandomMelody(frequencies);
-      melodyArray = melodyThemeArray;
+      randomIntro();
+      createTheme();
       if (currentSong === songs) {
         currentSong = 0;
-        timer.stop();
+        currentSongDuration = 0;
+        currentMeasure = 0;
+        initTime();
+        initScale();
+        initDrumMachine();
+        randomIntro();
+        createTheme();
       }
     }
   }
@@ -690,75 +671,20 @@ function playSequence() {
     kicksArray[currentStep] ||
     (currentStep == 0 && currentSongDuration > 0)
   ) {
-    let gainNode = audioCtx.createGain();
-    kickBuffer = audioCtx.createBufferSource();
-    kickBuffer.buffer = kick;
-    gainNode.gain.value = 1;
-    kickBuffer.connect(gainNode).connect(audioCtx.destination);
-    kickBuffer.start(audioCtx.currentTime);
-    kickBuffer.stop(audioCtx.currentTime + timeSignature);
-    setTimeout(() => {
-      kickBuffer.disconnect();
-      gainNode.disconnect();
-    }, timeSignature * 100);
+    playPercussion(kick);
   }
   if (chhsArray[currentStep]) {
-    let gainNode = audioCtx.createGain();
-    chhBuffer = audioCtx.createBufferSource();
-    chhBuffer.buffer = chh;
-    gainNode.gain.value =
-      velocities[Math.floor(Math.random() * velocities.length)];
-    chhBuffer.connect(gainNode).connect(audioCtx.destination);
-    chhBuffer.start(audioCtx.currentTime);
-    chhBuffer.stop(audioCtx.currentTime + timeSignature);
-    setTimeout(() => {
-      chhBuffer.disconnect();
-      gainNode.disconnect();
-    }, timeSignature * 100);
+    playPercussion(chh);
   }
   if (snaresArray[currentStep]) {
-    let gainNode = audioCtx.createGain();
-    snareBuffer = audioCtx.createBufferSource();
-    snareBuffer.buffer = snare;
-    gainNode.gain.value =
-      velocities[Math.floor(Math.random() * velocities.length)];
-    snareBuffer.connect(gainNode).connect(audioCtx.destination);
-    snareBuffer.start(audioCtx.currentTime);
-    snareBuffer.stop(audioCtx.currentTime + timeSignature);
-    setTimeout(() => {
-      snareBuffer.disconnect();
-      gainNode.disconnect();
-    }, timeSignature * 100);
+    playPercussion(snare);
   }
   if (ohhsArray[currentStep]) {
-    let gainNode = audioCtx.createGain();
-    ohhBuffer = audioCtx.createBufferSource();
-    ohhBuffer.buffer = ohh;
-    gainNode.gain.value =
-      velocities[Math.floor(Math.random() * velocities.length)];
-    ohhBuffer.connect(gainNode).connect(audioCtx.destination);
-    ohhBuffer.start(audioCtx.currentTime);
-    ohhBuffer.stop(audioCtx.currentTime + timeSignature);
-    setTimeout(() => {
-      ohhBuffer.disconnect();
-      gainNode.disconnect();
-    }, timeSignature * 100);
+    playPercussion(ohh);
   }
   if (clsArray[currentStep]) {
-    let gainNode = audioCtx.createGain();
-    clBuffer = audioCtx.createBufferSource();
-    clBuffer.buffer = cl;
-    gainNode.gain.value =
-      velocities[Math.floor(Math.random() * velocities.length)];
-    clBuffer.connect(gainNode).connect(audioCtx.destination);
-    clBuffer.start(audioCtx.currentTime);
-    clBuffer.stop(audioCtx.currentTime + timeSignature);
-    setTimeout(() => {
-      clBuffer.disconnect();
-      gainNode.disconnect();
-    }, timeSignature * 100);
+    playPercussion(cl);
   }
-
   if (currentSongDuration > 0) {
     if (bassArray[currentStep] != null) {
       playBass(
@@ -768,7 +694,7 @@ function playSequence() {
       );
     }
   }
-  if (chordArray[currentStep].note != undefined) {
+  if (chordArray[currentStep] != undefined) {
     if (chordArray[currentStep].note) {
       playChord(
         chordArray[currentStep].note,
@@ -777,7 +703,6 @@ function playSequence() {
       );
     }
   }
-  randomizer = Math.random();
   if (randomizer < 0.8) {
     if (Math.random() < 0.5) {
       if (noteArray[currentStep] != null) {
@@ -815,8 +740,22 @@ function playSequence() {
   }
 }
 
-function loop() {
-  randomIntro();
+function playPercussion(buffer) {
+  let gainNode = audioCtx.createGain();
+  let percBuffer = audioCtx.createBufferSource();
+  percBuffer.buffer = buffer;
+  gainNode.gain.value =
+    velocities[Math.floor(Math.random() * velocities.length)];
+  percBuffer.connect(gainNode).connect(audioCtx.destination);
+  percBuffer.start(audioCtx.currentTime);
+  percBuffer.stop(audioCtx.currentTime + timeSignature);
+  setTimeout(() => {
+    percBuffer.disconnect();
+    gainNode.disconnect();
+  }, timeSignature * 100);
+}
+
+function createTheme() {
   noteThemeArray = generateRandomNoteSequence(frequencies);
   noteArray = noteThemeArray;
   bassThemeArray = generateRandomBass(bassFrequencies);
@@ -825,6 +764,11 @@ function loop() {
   chordArray = chordThemeArray;
   melodyThemeArray = generateRandomMelody(frequencies);
   melodyArray = melodyThemeArray;
+}
+
+function loop() {
+  randomIntro();
+  createTheme();
   timer.callback = playSequence;
   timer.timeInterval = (6000 / bpm / 4) * 10;
   timer.errorCallback = "error";
