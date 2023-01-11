@@ -670,16 +670,16 @@ function playSequence() {
     playPercussion(kick);
   }
   if (chhsArray[currentStep]) {
-    playPercussion(chh);
+    playPercussionWithVelocity(chh);
   }
   if (snaresArray[currentStep]) {
-    playPercussion(snare);
+    playPercussionWithVelocity(snare);
   }
   if (ohhsArray[currentStep]) {
-    playPercussion(ohh);
+    playPercussionWithVelocity(ohh);
   }
   if (clsArray[currentStep]) {
-    playPercussion(cl);
+    playPercussionWithVelocity(cl);
   }
   if (currentSongDuration > 0) {
     if (bassArray[currentStep] != null) {
@@ -737,6 +737,20 @@ function playSequence() {
 }
 
 function playPercussion(buffer) {
+  let gainNode = audioCtx.createGain();
+  let percBuffer = audioCtx.createBufferSource();
+  percBuffer.buffer = buffer;
+  gainNode.gain.value = 1;
+  percBuffer.connect(gainNode).connect(audioCtx.destination);
+  percBuffer.start(audioCtx.currentTime);
+  percBuffer.stop(audioCtx.currentTime + timeSignature);
+  setTimeout(() => {
+    percBuffer.disconnect();
+    gainNode.disconnect();
+  }, timeSignature * 100);
+}
+
+function playPercussionWithVelocity(buffer) {
   let gainNode = audioCtx.createGain();
   let percBuffer = audioCtx.createBufferSource();
   percBuffer.buffer = buffer;
