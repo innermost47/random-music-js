@@ -138,14 +138,15 @@ let isPlaying = false;
 let feedbackValueDelay = 0;
 let delayTime = 0.5;
 let randomizer;
-let bassFilterFrequency = 6000;
+let bassFilterFrequency = 3000;
 let bassFilterFrequencyArrived = bassFilterFrequency / 4;
 let chordFilterFrequency = 8000;
-let chordFilterFrequencyArrived = chordFilterFrequency;
+let chordFilterFrequencyArrived = chordFilterFrequency / 1.3;
 let noteFilterFrequency = 4000;
 let noteFilterFrequencyArrived = noteFilterFrequency / 2;
 let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
+let newChord = false;
 
 delayNode.delayTime.value = delayTime;
 feedbackGainNode.gain.value = feedbackValueDelay;
@@ -170,10 +171,10 @@ function initScale() {
   rootNote = chromaticScale[Math.floor(Math.random() * chromaticScale.length)];
   modeOffset = modeOffsets[Math.floor(Math.random() * modeOffsets.length)];
   scale = createMode(rootNote, modeOffset);
-  bassScale = [scale[0], scale[2], scale[4], scale[3], scale[5], scale[6]];
+  bassScale = [scale[0], scale[2], scale[4], scale[6]];
   chords = [
-    [scale[0] + "3", scale[2] + "3", scale[4] + "3"],
-    [scale[0] + "3", scale[2] + "3", scale[6] + "3"],
+    [scale[0] + "2", scale[2] + "2", scale[4] + "2"],
+    [scale[0] + "2", scale[2] + "2", scale[6] + "2"],
   ];
   for (const octave of octaves) {
     for (const note of scale) {
@@ -206,34 +207,95 @@ function initScale() {
   });
 }
 
-function getRandomValueWithFollowing(arr) {
-  let randomIndex = Math.floor(Math.random() * arr.length);
-  let randomValue = arr[randomIndex];
-
-  let values = [randomValue];
-  values.push();
-  for (let i = 1; i <= 3; i++) {
-    let index = (randomIndex + i * 2) % arr.length;
-    values.push(arr[index]);
-  }
-  return values;
-}
-
 function createBassAndChords() {
   bassFrequencies = [];
   chordsFrequencies = [];
-  bassScale = getRandomValueWithFollowing(scale);
-  bassNotes = [];
-
-  chords = [
-    [bassScale[0] + "3", bassScale[1] + "3", bassScale[2] + "3"],
-    [bassScale[0] + "3", bassScale[1] + "3", bassScale[3] + "3"],
-  ];
-
-  for (const bassOctave of bassOctaves) {
-    for (const note of bassScale) {
-      bassNotes.push(`${note}${bassOctave}`);
-    }
+  let random = Math.random();
+  switch (true) {
+    case random < 1 / 7:
+      bassNotes = [
+        scale[0] + "2",
+        scale[2] + "2",
+        scale[4] + "2",
+        scale[5] + "2",
+      ];
+      chords = [
+        [bassNotes[0], bassNotes[1], bassNotes[2]],
+        [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      break;
+    case random >= 1 / 7 && random < 2 / 7:
+      bassNotes = [
+        scale[1] + "2",
+        scale[3] + "2",
+        scale[5] + "2",
+        scale[0] + "3",
+      ];
+      chords = [
+        [bassNotes[0], bassNotes[1], bassNotes[2]],
+        [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      break;
+    case random >= 2 / 7 && random < 3 / 7:
+      bassNotes = [
+        scale[2] + "2",
+        scale[4] + "2",
+        scale[6] + "2",
+        scale[1] + "3",
+      ];
+      chords = [
+        [bassNotes[0], bassNotes[1], bassNotes[2]],
+        [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      break;
+    case random >= 3 / 7 && random < 4 / 7:
+      bassNotes = [
+        scale[3] + "1",
+        scale[5] + "1",
+        scale[0] + "2",
+        scale[2] + "2",
+      ];
+      chords = [
+        [bassNotes[0], bassNotes[1], bassNotes[2]],
+        [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      break;
+    case random >= 4 / 7 && random < 5 / 7:
+      bassNotes = [
+        scale[4] + "1",
+        scale[6] + "1",
+        scale[1] + "2",
+        scale[3] + "2",
+      ];
+      chords = [
+        [bassNotes[0], bassNotes[1], bassNotes[2]],
+        [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      break;
+    case random >= 5 / 7 && random < 6 / 7:
+      bassNotes = [
+        scale[5] + "1",
+        scale[0] + "2",
+        scale[2] + "2",
+        scale[4] + "2",
+      ];
+      chords = [
+        [bassNotes[0], bassNotes[1], bassNotes[2]],
+        [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      break;
+    case random >= 6 / 7 && random < 7 / 7:
+      bassNotes = [
+        scale[6] + "1",
+        scale[1] + "2",
+        scale[3] + "2",
+        scale[5] + "2",
+      ];
+      chords = [
+        [bassNotes[0], bassNotes[1], bassNotes[2]],
+        [bassNotes[0], bassNotes[1], bassNotes[3]],
+      ];
+      break;
   }
 
   bassFrequencies = bassNotes.map((note) => {
@@ -298,13 +360,12 @@ function playBass(frequency, duration, filter) {
     audioCtx.currentTime + attackTime + decayTime
   );
 
-  oscillateurGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
     0.1,
     audioCtx.currentTime + duration
   );
-
-  oscillateur2Gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  oscillateur2Gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
   oscillateur2Gain.gain.linearRampToValueAtTime(
     0.1,
     audioCtx.currentTime + duration
@@ -315,12 +376,8 @@ function playBass(frequency, duration, filter) {
 
   oscillator2.connect(oscillateur2Gain);
   oscillateur2Gain.connect(filter);
-  filter.connect(delayNode);
-  delayNode.connect(feedbackGainNode);
-  feedbackGainNode.connect(delayNode);
 
   filter.connect(audioCtx.destination);
-  delayNode.connect(audioCtx.destination);
 
   oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
   oscillator2.frequency.setValueAtTime(frequency, audioCtx.currentTime);
@@ -357,7 +414,7 @@ function playChord(frequencies, duration, filter) {
 
   filter.type = "lowpass";
   filter.frequency.value = chordFilterFrequency;
-  filter.Q.value = 5;
+  filter.Q.value = 15;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
 
@@ -370,17 +427,17 @@ function playChord(frequencies, duration, filter) {
     audioCtx.currentTime + attackTime + decayTime
   );
 
-  oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  oscillateurGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
     0,
     audioCtx.currentTime + duration / 2
   );
-  oscillateur2Gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  oscillateur2Gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
   oscillateur2Gain.gain.linearRampToValueAtTime(
     0,
     audioCtx.currentTime + duration / 2
   );
-  oscillateur3Gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  oscillateur3Gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
   oscillateur3Gain.gain.linearRampToValueAtTime(
     0,
     audioCtx.currentTime + duration / 2
@@ -399,9 +456,15 @@ function playChord(frequencies, duration, filter) {
   filter.connect(audioCtx.destination);
   delayNode.connect(audioCtx.destination);
 
-  oscillator.frequency.setValueAtTime(frequencies[0], audioCtx.currentTime);
-  oscillator2.frequency.setValueAtTime(frequencies[1], audioCtx.currentTime);
-  oscillator3.frequency.setValueAtTime(frequencies[2], audioCtx.currentTime);
+  oscillator.frequency.setValueAtTime(frequencies[0] * 2, audioCtx.currentTime);
+  oscillator2.frequency.setValueAtTime(
+    frequencies[1] * 2,
+    audioCtx.currentTime
+  );
+  oscillator3.frequency.setValueAtTime(
+    frequencies[2] * 2,
+    audioCtx.currentTime
+  );
 
   oscillator.start(audioCtx.currentTime);
   oscillator.stop(audioCtx.currentTime + duration);
@@ -550,6 +613,7 @@ function playSequence() {
       cy.connect(gainNode).connect(audioCtx.destination);
       cy.start(audioCtx.currentTime);
       cy.stop(audioCtx.currentTime + timeSignature);
+      newChord = false;
       setTimeout(() => {
         cy.disconnect();
         gainNode.disconnect();
@@ -571,7 +635,7 @@ function playSequence() {
         if (Math.random() < 0.03 && currentSongDuration > 4) {
           initScale();
         }
-        if (currentSongDuration > 4 && Math.random() < 0.7) {
+        if (currentSongDuration > 4 && Math.random() < 0.4) {
           createBassAndChords();
         }
         noteArray = generateRandomNoteSequence(frequencies);
@@ -623,79 +687,78 @@ function playSequence() {
     }
   }
   if (
-    currentSongDuration > 0 ||
-    (currentSongDuration == 0 && currentMeasure === measures - 1)
+    kicksArray[currentStep] ||
+    (currentStep == 0 && currentSongDuration > 0)
   ) {
-    if (kicksArray[currentStep] || currentStep == 0) {
-      let gainNode = audioCtx.createGain();
-      kickBuffer = audioCtx.createBufferSource();
-      kickBuffer.buffer = kick;
-      gainNode.gain.value = 1;
-      kickBuffer.connect(gainNode).connect(audioCtx.destination);
-      kickBuffer.start(audioCtx.currentTime);
-      kickBuffer.stop(audioCtx.currentTime + timeSignature);
-      setTimeout(() => {
-        kickBuffer.disconnect();
-        gainNode.disconnect();
-      }, timeSignature * 100);
-    }
-    if (chhsArray[currentStep]) {
-      let gainNode = audioCtx.createGain();
-      chhBuffer = audioCtx.createBufferSource();
-      chhBuffer.buffer = chh;
-      gainNode.gain.value =
-        velocities[Math.floor(Math.random() * velocities.length)];
-      chhBuffer.connect(gainNode).connect(audioCtx.destination);
-      chhBuffer.start(audioCtx.currentTime);
-      chhBuffer.stop(audioCtx.currentTime + timeSignature);
-      setTimeout(() => {
-        chhBuffer.disconnect();
-        gainNode.disconnect();
-      }, timeSignature * 100);
-    }
-    if (snaresArray[currentStep]) {
-      let gainNode = audioCtx.createGain();
-      snareBuffer = audioCtx.createBufferSource();
-      snareBuffer.buffer = snare;
-      gainNode.gain.value =
-        velocities[Math.floor(Math.random() * velocities.length)];
-      snareBuffer.connect(gainNode).connect(audioCtx.destination);
-      snareBuffer.start(audioCtx.currentTime);
-      snareBuffer.stop(audioCtx.currentTime + timeSignature);
-      setTimeout(() => {
-        snareBuffer.disconnect();
-        gainNode.disconnect();
-      }, timeSignature * 100);
-    }
-    if (ohhsArray[currentStep]) {
-      let gainNode = audioCtx.createGain();
-      ohhBuffer = audioCtx.createBufferSource();
-      ohhBuffer.buffer = ohh;
-      gainNode.gain.value =
-        velocities[Math.floor(Math.random() * velocities.length)];
-      ohhBuffer.connect(gainNode).connect(audioCtx.destination);
-      ohhBuffer.start(audioCtx.currentTime);
-      ohhBuffer.stop(audioCtx.currentTime + timeSignature);
-      setTimeout(() => {
-        ohhBuffer.disconnect();
-        gainNode.disconnect();
-      }, timeSignature * 100);
-    }
-    if (clsArray[currentStep]) {
-      let gainNode = audioCtx.createGain();
-      clBuffer = audioCtx.createBufferSource();
-      clBuffer.buffer = cl;
-      gainNode.gain.value =
-        velocities[Math.floor(Math.random() * velocities.length)];
-      clBuffer.connect(gainNode).connect(audioCtx.destination);
-      clBuffer.start(audioCtx.currentTime);
-      clBuffer.stop(audioCtx.currentTime + timeSignature);
-      setTimeout(() => {
-        clBuffer.disconnect();
-        gainNode.disconnect();
-      }, timeSignature * 100);
-    }
+    let gainNode = audioCtx.createGain();
+    kickBuffer = audioCtx.createBufferSource();
+    kickBuffer.buffer = kick;
+    gainNode.gain.value = 1;
+    kickBuffer.connect(gainNode).connect(audioCtx.destination);
+    kickBuffer.start(audioCtx.currentTime);
+    kickBuffer.stop(audioCtx.currentTime + timeSignature);
+    setTimeout(() => {
+      kickBuffer.disconnect();
+      gainNode.disconnect();
+    }, timeSignature * 100);
   }
+  if (chhsArray[currentStep]) {
+    let gainNode = audioCtx.createGain();
+    chhBuffer = audioCtx.createBufferSource();
+    chhBuffer.buffer = chh;
+    gainNode.gain.value =
+      velocities[Math.floor(Math.random() * velocities.length)];
+    chhBuffer.connect(gainNode).connect(audioCtx.destination);
+    chhBuffer.start(audioCtx.currentTime);
+    chhBuffer.stop(audioCtx.currentTime + timeSignature);
+    setTimeout(() => {
+      chhBuffer.disconnect();
+      gainNode.disconnect();
+    }, timeSignature * 100);
+  }
+  if (snaresArray[currentStep]) {
+    let gainNode = audioCtx.createGain();
+    snareBuffer = audioCtx.createBufferSource();
+    snareBuffer.buffer = snare;
+    gainNode.gain.value =
+      velocities[Math.floor(Math.random() * velocities.length)];
+    snareBuffer.connect(gainNode).connect(audioCtx.destination);
+    snareBuffer.start(audioCtx.currentTime);
+    snareBuffer.stop(audioCtx.currentTime + timeSignature);
+    setTimeout(() => {
+      snareBuffer.disconnect();
+      gainNode.disconnect();
+    }, timeSignature * 100);
+  }
+  if (ohhsArray[currentStep]) {
+    let gainNode = audioCtx.createGain();
+    ohhBuffer = audioCtx.createBufferSource();
+    ohhBuffer.buffer = ohh;
+    gainNode.gain.value =
+      velocities[Math.floor(Math.random() * velocities.length)];
+    ohhBuffer.connect(gainNode).connect(audioCtx.destination);
+    ohhBuffer.start(audioCtx.currentTime);
+    ohhBuffer.stop(audioCtx.currentTime + timeSignature);
+    setTimeout(() => {
+      ohhBuffer.disconnect();
+      gainNode.disconnect();
+    }, timeSignature * 100);
+  }
+  if (clsArray[currentStep]) {
+    let gainNode = audioCtx.createGain();
+    clBuffer = audioCtx.createBufferSource();
+    clBuffer.buffer = cl;
+    gainNode.gain.value =
+      velocities[Math.floor(Math.random() * velocities.length)];
+    clBuffer.connect(gainNode).connect(audioCtx.destination);
+    clBuffer.start(audioCtx.currentTime);
+    clBuffer.stop(audioCtx.currentTime + timeSignature);
+    setTimeout(() => {
+      clBuffer.disconnect();
+      gainNode.disconnect();
+    }, timeSignature * 100);
+  }
+
   if (currentSongDuration > 0) {
     if (bassArray[currentStep] != null) {
       playBass(
@@ -705,15 +768,14 @@ function playSequence() {
       );
     }
   }
-  if (
-    chordArray[currentStep].note &&
-    chordArray[currentStep].note != undefined
-  ) {
-    playChord(
-      chordArray[currentStep].note,
-      chordArray[currentStep].duration,
-      chordFilter
-    );
+  if (chordArray[currentStep].note != undefined) {
+    if (chordArray[currentStep].note) {
+      playChord(
+        chordArray[currentStep].note,
+        chordArray[currentStep].duration,
+        chordFilter
+      );
+    }
   }
   randomizer = Math.random();
   if (randomizer < 0.8) {
@@ -754,7 +816,7 @@ function playSequence() {
 }
 
 function loop() {
-  randomRiddim();
+  randomIntro();
   noteThemeArray = generateRandomNoteSequence(frequencies);
   noteArray = noteThemeArray;
   bassThemeArray = generateRandomBass(bassFrequencies);
@@ -767,6 +829,13 @@ function loop() {
   timer.timeInterval = (6000 / bpm / 4) * 10;
   timer.errorCallback = "error";
   timer.start();
+}
+
+function randomIntro() {
+  chhsArray = [];
+  for (let i = 0; i < timeSignature; i++) {
+    chhsArray.push(Math.random() < 0.7);
+  }
 }
 
 function randomRiddim() {
