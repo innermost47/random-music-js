@@ -209,19 +209,15 @@ function initScale() {
 }
 
 function getRandomValueWithFollowing(arr) {
-  // Récupération de la valeur aléatoire
-  var randomIndex = Math.floor(Math.random() * arr.length);
-  var randomValue = arr[randomIndex];
+  let randomIndex = Math.floor(Math.random() * arr.length);
+  let randomValue = arr[randomIndex];
 
-  // Récupération des valeurs suivantes
-  var values = [randomValue];
+  let values = [randomValue];
   values.push();
-  for (var i = 1; i <= 3; i++) {
-    var index = (randomIndex + i * 2) % arr.length;
+  for (let i = 1; i <= 3; i++) {
+    let index = (randomIndex + i * 2) % arr.length;
     values.push(arr[index]);
   }
-
-  // Retour de la valeur aléatoire et des valeurs suivantes
   return values;
 }
 
