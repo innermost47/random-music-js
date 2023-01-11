@@ -107,11 +107,6 @@ let chh;
 let ohh;
 let cl;
 let snare;
-let kickBuffer;
-let chhBuffer;
-let ohhBuffer;
-let clBuffer;
-let snareBuffer;
 let cy;
 let kicksArray = [];
 let chhsArray = [];
@@ -156,6 +151,7 @@ function initDrumMachine() {
   snare = snareBuffers[Math.floor(Math.random() * snareBuffers.length)];
   ohh = ohhBuffers[Math.floor(Math.random() * ohhBuffers.length)];
   cl = clBuffers[Math.floor(Math.random() * clBuffers.length)];
+  cy = cyBuffers[0];
 }
 
 function initScale() {
