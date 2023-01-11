@@ -143,11 +143,11 @@ let randomizer;
 let bassFilterFrequency = 6000;
 let bassFilterFrequencyArrived = bassFilterFrequency / 4;
 let chordFilterFrequency = 4000;
-let chordFilterFrequencyArrived = chordFilterFrequency / 4;
+let chordFilterFrequencyArrived = chordFilterFrequency / 2;
 let noteFilterFrequency = 4000;
-let noteFilterFrequencyArrived = noteFilterFrequency / 4;
-let melodyFilterFrequency = 4000;
-let melodyFilterFrequencyArrived = melodyFilterFrequency / 4;
+let noteFilterFrequencyArrived = noteFilterFrequency / 2;
+let melodyFilterFrequency = 6000;
+let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
 
 delayNode.delayTime.value = delayTime;
 feedbackGainNode.gain.value = feedbackValueDelay;
@@ -174,11 +174,8 @@ function initScale() {
   scale = createMode(rootNote, modeOffset);
   bassScale = [scale[0], scale[2], scale[4], scale[3], scale[5], scale[6]];
   chords = [
-    [scale[0] + "3", scale[2] + "3", scale[3] + "3"],
-    [scale[0] + "3", scale[3] + "3", scale[5] + "3"],
-    [scale[2] + "3", scale[4] + "3", scale[6] + "3"],
-    [scale[5] + "3", scale[0] + "4", scale[2] + "4"],
-    [scale[3] + "3", scale[5] + "3", scale[0] + "4"],
+    [scale[0] + "3", scale[2] + "3", scale[4] + "3"],
+    [scale[0] + "3", scale[2] + "3", scale[6] + "3"],
   ];
   for (const octave of octaves) {
     for (const note of scale) {
@@ -211,17 +208,33 @@ function initScale() {
   });
 }
 
+function getRandomValueWithFollowing(arr) {
+  // Récupération de la valeur aléatoire
+  var randomIndex = Math.floor(Math.random() * arr.length);
+  var randomValue = arr[randomIndex];
+
+  // Récupération des valeurs suivantes
+  var values = [randomValue];
+  values.push();
+  for (var i = 1; i <= 3; i++) {
+    var index = (randomIndex + i * 2) % arr.length;
+    values.push(arr[index]);
+  }
+
+  // Retour de la valeur aléatoire et des valeurs suivantes
+  return values;
+}
+
 function createBassAndChords() {
   bassFrequencies = [];
   chordsFrequencies = [];
-  bassScale = [];
+  bassScale = getRandomValueWithFollowing(scale);
   bassNotes = [];
 
-  for (let i = 0; i < 4; i++) {
-    let note = scale[Math.floor(Math.random() * scale.length)];
-    bassScale.push(note);
-  }
-  chords = [[bassScale[0] + "3", bassScale[2] + "3", bassScale[3] + "3"]];
+  chords = [
+    [bassScale[0] + "3", bassScale[1] + "3", bassScale[2] + "3"],
+    [bassScale[0] + "3", bassScale[1] + "3", bassScale[3] + "3"],
+  ];
 
   for (const bassOctave of bassOctaves) {
     for (const note of bassScale) {
@@ -350,7 +363,7 @@ function playChord(frequencies, duration, filter) {
 
   filter.type = "lowpass";
   filter.frequency.value = chordFilterFrequency;
-  filter.Q.value = 10;
+  filter.Q.value = 5;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
 
@@ -363,20 +376,20 @@ function playChord(frequencies, duration, filter) {
     audioCtx.currentTime + attackTime + decayTime
   );
 
-  oscillateurGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
     0,
-    audioCtx.currentTime + duration
+    audioCtx.currentTime + duration / 2
   );
-  oscillateur2Gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  oscillateur2Gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateur2Gain.gain.linearRampToValueAtTime(
     0,
-    audioCtx.currentTime + duration
+    audioCtx.currentTime + duration / 2
   );
-  oscillateur3Gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  oscillateur3Gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateur3Gain.gain.linearRampToValueAtTime(
     0,
-    audioCtx.currentTime + duration
+    audioCtx.currentTime + duration / 2
   );
 
   oscillator.connect(oscillateurGain);
@@ -473,7 +486,7 @@ function playMelody(frequency, duration, filter) {
   let oscillator = audioCtx.createOscillator();
   let oscillateurGain = audioCtx.createGain();
 
-  oscillator.type = "square";
+  oscillator.type = "sawtooth";
 
   filter.type = "lowpass";
   filter.frequency.value = melodyFilterFrequency;
@@ -505,7 +518,7 @@ function playMelody(frequency, duration, filter) {
   filter.connect(audioCtx.destination);
   delayNode.connect(audioCtx.destination);
 
-  oscillator.frequency.setValueAtTime(frequency * 2, audioCtx.currentTime);
+  oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
   oscillator.start(audioCtx.currentTime);
 
@@ -526,11 +539,6 @@ function playSequence() {
   } else {
     currentStep = 0;
     currentMeasure++;
-    if (currentMeasure === measures / 2) {
-      createBassAndChords();
-      bassArray = generateRandomBass(bassFrequencies);
-      chordArray = generateRandomChordSequence(chordsFrequencies);
-    }
     if (
       currentMeasure === measures / 2 &&
       Math.random() < 0.3 &&
@@ -569,7 +577,9 @@ function playSequence() {
         if (Math.random() < 0.03 && currentSongDuration > 4) {
           initScale();
         }
-        createBassAndChords();
+        if (currentSongDuration > 4 && Math.random() < 0.7) {
+          createBassAndChords();
+        }
         noteArray = generateRandomNoteSequence(frequencies);
         bassArray = generateRandomBass(bassFrequencies);
         chordArray = generateRandomChordSequence(chordsFrequencies);
@@ -604,7 +614,6 @@ function playSequence() {
       initTime();
       initScale();
       initDrumMachine();
-      createBassAndChords();
       noteThemeArray = generateRandomNoteSequence(frequencies);
       noteArray = noteThemeArray;
       bassThemeArray = generateRandomBass(bassFrequencies);
@@ -749,7 +758,6 @@ function playSequence() {
 
 function loop() {
   randomRiddim();
-  createBassAndChords();
   noteThemeArray = generateRandomNoteSequence(frequencies);
   noteArray = noteThemeArray;
   bassThemeArray = generateRandomBass(bassFrequencies);
