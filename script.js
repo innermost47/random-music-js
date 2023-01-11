@@ -132,12 +132,12 @@ let chordsFrequencies = [];
 let modeOffset = [];
 let rootNote;
 let isPlaying = false;
-let feedbackValueDelay = 0;
-let delayTime = 0.5;
+let feedbackValueDelay = 1;
+let delayTime = 1;
 let randomizer = Math.random();
 let bassFilterFrequency = 3000;
 let bassFilterFrequencyArrived = bassFilterFrequency / 4;
-let chordFilterFrequency = 8000;
+let chordFilterFrequency = 5000;
 let chordFilterFrequencyArrived = chordFilterFrequency / 1.3;
 let noteFilterFrequency = 4000;
 let noteFilterFrequencyArrived = noteFilterFrequency / 2;
@@ -146,6 +146,8 @@ let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
 
 delayNode.delayTime.value = delayTime;
 feedbackGainNode.gain.value = feedbackValueDelay;
+delayNode.connect(feedbackGainNode);
+delayNode.connect(audioCtx.destination);
 
 function initDrumMachine() {
   kick = kickBuffers[Math.floor(Math.random() * kickBuffers.length)];
@@ -419,7 +421,7 @@ function createBassAndChords() {
 }
 
 function initTime() {
-  const numbers = [2, 3, 4];
+  const numbers = [3, 4];
   timeSignature = numbers[Math.floor(Math.random() * numbers.length)] * 4;
   decayTime = 0.1;
 }
@@ -520,7 +522,7 @@ function playChord(frequencies, duration, filter) {
 
   filter.type = "lowpass";
   filter.frequency.value = chordFilterFrequency;
-  filter.Q.value = 15;
+  filter.Q.value = 10;
 
   filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
 
@@ -555,12 +557,8 @@ function playChord(frequencies, duration, filter) {
   oscillateurGain.connect(filter);
   oscillateur2Gain.connect(filter);
   oscillateur3Gain.connect(filter);
-  filter.connect(delayNode);
-  delayNode.connect(feedbackGainNode);
-  feedbackGainNode.connect(delayNode);
 
-  filter.connect(audioCtx.destination);
-  delayNode.connect(audioCtx.destination);
+  filter.connect(delayNode);
 
   oscillator.frequency.setValueAtTime(frequencies[0] * 2, audioCtx.currentTime);
   oscillator2.frequency.setValueAtTime(
@@ -625,11 +623,6 @@ function playNote(frequency, duration, filter) {
   oscillator.connect(oscillateurGain);
   oscillateurGain.connect(filter);
   filter.connect(delayNode);
-  delayNode.connect(feedbackGainNode);
-  feedbackGainNode.connect(delayNode);
-
-  filter.connect(audioCtx.destination);
-  delayNode.connect(audioCtx.destination);
 
   oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
@@ -649,7 +642,7 @@ function playMelody(frequency, duration, filter) {
   let oscillator = audioCtx.createOscillator();
   let oscillateurGain = audioCtx.createGain();
 
-  oscillator.type = "sawtooth";
+  oscillator.type = "square";
 
   filter.type = "lowpass";
   filter.frequency.value = melodyFilterFrequency;
@@ -666,22 +659,17 @@ function playMelody(frequency, duration, filter) {
     audioCtx.currentTime + attackTime + decayTime
   );
 
-  oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  oscillateurGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
     0,
-    audioCtx.currentTime + duration / 2
+    audioCtx.currentTime + duration
   );
 
   oscillator.connect(oscillateurGain);
   oscillateurGain.connect(filter);
   filter.connect(delayNode);
-  delayNode.connect(feedbackGainNode);
-  feedbackGainNode.connect(delayNode);
 
-  filter.connect(audioCtx.destination);
-  delayNode.connect(audioCtx.destination);
-
-  oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+  oscillator.frequency.setValueAtTime(frequency * 2, audioCtx.currentTime);
 
   oscillator.start(audioCtx.currentTime);
 
@@ -816,7 +804,7 @@ function playSequence() {
       );
     }
   }
-  if (randomizer < 0.8) {
+  if (randomizer < 1 / 3) {
     if (Math.random() < 0.5) {
       if (noteArray[currentStep] != null) {
         playNote(
@@ -834,7 +822,7 @@ function playSequence() {
         );
       }
     }
-  } else if (randomizer >= 0.8 && randomizer < 0.9) {
+  } else if (randomizer >= 1 / 3 && randomizer < 2 / 3) {
     if (noteArray[currentStep] != null) {
       playNote(
         noteArray[currentStep].note,
@@ -842,7 +830,7 @@ function playSequence() {
         noteFilter
       );
     }
-  } else if (randomizer >= 0.9) {
+  } else if (randomizer >= 2 / 3 && randomizer < 1) {
     if (melodyArray[currentStep] != null) {
       playMelody(
         melodyArray[currentStep].note,
@@ -1085,7 +1073,7 @@ function generateRandomBass(frequencies) {
       let duration = null;
       sequence.push({ note, duration });
     } else {
-      if (Math.random() < 0.3) {
+      if (Math.random() < 0.5) {
         if ((i = 0)) {
           note = frequencies[i];
         } else {
@@ -1188,7 +1176,7 @@ function generateRandomMelody(frequencies) {
       let duration = "";
       sequence.push({ note, duration });
     } else {
-      if (Math.random() < 0.25) {
+      if (Math.random() < 0.6) {
         let note = frequencies[Math.floor(Math.random() * frequencies.length)];
         let duration = timeSignature / bpm;
         sequence.push({ note, duration });
