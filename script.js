@@ -709,9 +709,6 @@ function playSequence() {
         bassArray = [];
         chordArray = [];
         melodyArray = [];
-        if (Math.random() < 0.1 && currentSongDuration > 4) {
-          initTime();
-        }
         if (Math.random() < 0.03 && currentSongDuration > 4) {
           initScale();
         }
@@ -721,7 +718,9 @@ function playSequence() {
         if (currentSongDuration > 3) {
           randomizer = Math.random();
         }
-        generateNextMusicalColor();
+        if (Math.random() < 0.3) {
+          generateNextMusicalColor();
+        }
         if (Math.random() < 0.2 && currentSongDuration > 12) {
           noteArray = noteThemeArray;
           bassArray = bassThemeArray;
@@ -739,7 +738,6 @@ function playSequence() {
       currentSongDuration = 0;
       currentMeasure = 0;
       currentSong++;
-      initTime();
       initScale();
       initDrumMachine();
       randomIntro();
@@ -748,7 +746,6 @@ function playSequence() {
         currentSong = 0;
         currentSongDuration = 0;
         currentMeasure = 0;
-        initTime();
         initScale();
         initDrumMachine();
         randomIntro();
@@ -938,6 +935,60 @@ function randomRiddim() {
         kicksArray.push(false);
         chhsArray.push(false);
         snaresArray.push(false);
+        clsArray.push(false);
+        ohhsArray.push(false);
+      }
+      break;
+    case 5:
+      for (let i = 0; i < timeSignature; i++) {
+        kicksArray.push(Math.random() < 0.3);
+        chhsArray.push(Math.random() < 0.9);
+        snaresArray.push(Math.random() < 0.2);
+        clsArray.push(Math.random() < 0.2);
+        ohhsArray.push(Math.random() < 0.4);
+      }
+      break;
+    case 6:
+      for (let i = 0; i < timeSignature; i++) {
+        kicksArray.push(Math.random() < 0.5);
+        chhsArray.push(Math.random() < 1);
+        snaresArray.push(Math.random() < 0.2);
+        clsArray.push(Math.random() < 0.2);
+        ohhsArray.push(false);
+      }
+      break;
+    case 7:
+      for (let i = 0; i < timeSignature; i++) {
+        kicksArray.push(Math.random() < 0.5);
+        chhsArray.push(Math.random() < 1);
+        snaresArray.push(Math.random() < 0.2);
+        clsArray.push(Math.random() < 0.2);
+        ohhsArray.push(Math.random() < 0.3);
+      }
+      break;
+    case 8:
+      for (let i = 0; i < timeSignature; i++) {
+        kicksArray.push(Math.random() < 0.4);
+        chhsArray.push(Math.random() < 0.4);
+        snaresArray.push(Math.random() < 0.2);
+        clsArray.push(Math.random() < 0.2);
+        ohhsArray.push(false);
+      }
+      break;
+    case 9:
+      for (let i = 0; i < timeSignature; i++) {
+        kicksArray.push(Math.random() < 0.6);
+        chhsArray.push(false);
+        snaresArray.push(Math.random() < 0.6);
+        clsArray.push(false);
+        ohhsArray.push(false);
+      }
+      break;
+    case 10:
+      for (let i = 0; i < timeSignature; i++) {
+        kicksArray.push(false);
+        chhsArray.push(false);
+        snaresArray.push(Math.random() < 0.8);
         clsArray.push(false);
         ohhsArray.push(false);
       }
