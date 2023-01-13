@@ -66,10 +66,10 @@ const arabianDorian = [0, 2, 3, 6, 7, 9, 10];
 const modeOffsets = [
   aeolianModeOffsets,
   phrygianModeOffsets,
-  dorianModeOffsets,
-  lydianModeOffsets,
-  ionianModeOffsets,
-  mixolydianModeOffsets,
+  // dorianModeOffsets,
+  // lydianModeOffsets,
+  // ionianModeOffsets,
+  // mixolydianModeOffsets,
   arabian,
   arabianDorian,
 ];
@@ -133,7 +133,7 @@ let modeOffset = [];
 let rootNote;
 let isPlaying = false;
 let feedbackValueDelay = 1;
-let delayTime = 1;
+let delayTime = 0.5;
 let randomizer = Math.random();
 let bassFilterFrequency = 3000;
 let bassFilterFrequencyArrived = bassFilterFrequency / 4;
@@ -145,9 +145,9 @@ let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
 
 delayNode.delayTime.value = delayTime;
-feedbackGainNode.gain.value = feedbackValueDelay;
 delayNode.connect(feedbackGainNode);
-delayNode.connect(audioCtx.destination);
+feedbackGainNode.gain.value = 0.2;
+feedbackGainNode.connect(audioCtx.destination);
 
 function initDrumMachine() {
   kick = kickBuffers[Math.floor(Math.random() * kickBuffers.length)];
@@ -559,6 +559,7 @@ function playChord(frequencies, duration, filter) {
   oscillateur3Gain.connect(filter);
 
   filter.connect(delayNode);
+  filter.connect(audioCtx.destination);
 
   oscillator.frequency.setValueAtTime(frequencies[0] * 2, audioCtx.currentTime);
   oscillator2.frequency.setValueAtTime(
@@ -623,7 +624,7 @@ function playNote(frequency, duration, filter) {
   oscillator.connect(oscillateurGain);
   oscillateurGain.connect(filter);
   filter.connect(delayNode);
-
+  filter.connect(audioCtx.destination);
   oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
   oscillator.start(audioCtx.currentTime);
@@ -668,6 +669,7 @@ function playMelody(frequency, duration, filter) {
   oscillator.connect(oscillateurGain);
   oscillateurGain.connect(filter);
   filter.connect(delayNode);
+  filter.connect(audioCtx.destination);
 
   oscillator.frequency.setValueAtTime(frequency * 2, audioCtx.currentTime);
 
@@ -690,35 +692,20 @@ function playSequence() {
   } else {
     currentStep = 0;
     currentMeasure++;
-    if (
-      currentMeasure === measures / 2 &&
-      Math.random() < 0.3 &&
-      currentSongDuration > 4
-    ) {
-      createBassAndChords();
-      generateNextMusicalColor();
-      playPercussionWithVelocity(cy, 1);
-    }
     if (currentMeasure === measures - 1) {
       randomBreak();
     }
     if (currentMeasure === measures) {
       randomRiddim();
       if (currentSongDuration > 1) {
-        noteArray = [];
-        bassArray = [];
-        chordArray = [];
-        melodyArray = [];
-        if (Math.random() < 0.03 && currentSongDuration > 4) {
-          initScale();
-        }
-        if (currentSongDuration > 4 && Math.random() < 0.4) {
+        if (currentSongDuration > 4 && Math.random() < 0.3) {
           createBassAndChords();
+          generateNextMusicalColor();
         }
         if (currentSongDuration > 3) {
           randomizer = Math.random();
         }
-        if (Math.random() < 0.3) {
+        if (Math.random() < 0.6) {
           generateNextMusicalColor();
         }
         if (Math.random() < 0.2 && currentSongDuration > 12) {
