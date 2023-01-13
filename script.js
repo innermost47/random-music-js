@@ -12,7 +12,7 @@ const cyBuffers = [];
 
 const initBuffers = (percussionName, percussionNameBuffers) => {
   const requests = [];
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 1; i++) {
     const request = new XMLHttpRequest();
     request.open("GET", `/sounds/${percussionName + i}.wav`, true);
     request.responseType = "arraybuffer";
@@ -195,6 +195,8 @@ function initScale() {
   chords = [
     [scale[0] + "2", scale[2] + "2", scale[4] + "2"],
     [scale[0] + "2", scale[2] + "2", scale[6] + "2"],
+    [scale[0] + "2", scale[4] + "2", scale[1] + "3"],
+    [scale[0] + "2", scale[5] + "2", scale[2] + "3"],
   ];
 
   melodyNotes = [
@@ -592,7 +594,7 @@ function playSequence() {
     currentStep = 0;
     currentMeasure++;
     if (currentMeasure === measures - 1) {
-      randomBreak();
+      randomRiddim();
     }
     if (currentMeasure === measures) {
       randomRiddim();
@@ -632,16 +634,16 @@ function playSequence() {
 
 function checkActions() {
   let actionTaken = false;
-  if (currentSongDuration > 4 && Math.random() < 0.3) {
+  if (currentSongDuration > 4 && Math.random() < 0.2) {
     createBassAndChords();
     generateNextMusicalColor();
     actionTaken = true;
   }
-  if (!actionTaken && Math.random() < 0.6) {
+  if (!actionTaken && Math.random() < 0.4) {
     generateNextMusicalColor();
     actionTaken = true;
   }
-  if (!actionTaken && Math.random() < 0.2 && currentSongDuration > 12) {
+  if (!actionTaken && Math.random() < 0.3 && currentSongDuration > 12) {
     noteArray = noteThemeArray;
     bassArray = bassThemeArray;
     chordArray = chordThemeArray;
@@ -714,7 +716,7 @@ function playDrum() {
     { array: clsArray, type: cl, velocity: true },
   ];
   percussions.forEach(({ array, type, velocity }) => {
-    if (array[currentStep] || (currentStep === 0 && currentSongDuration > 0)) {
+    if (array[currentStep]) {
       if (velocity) {
         playPercussionWithVelocity(
           type,
@@ -768,238 +770,34 @@ function loop() {
   timer.start();
 }
 
-function randomIntro() {
+function resetDrumSequence() {
+  kicksArray = [];
   chhsArray = [];
+  snaresArray = [];
+  clsArray = [];
+  ohhsArray = [];
+}
+
+function randomIntro() {
+  resetDrumSequence();
   for (let i = 0; i < timeSignature; i++) {
     chhsArray.push(Math.random() < 0.7);
   }
 }
 
 function randomRiddim() {
-  kicksArray = [];
-  chhsArray = [];
-  snaresArray = [];
-  clsArray = [];
-  ohhsArray = [];
-  const randomIndex = Math.floor(Math.random() * 10);
-  switch (randomIndex) {
-    case 0:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.3);
-        chhsArray.push(Math.random() < 0.7);
-        snaresArray.push(Math.random() < 0.3);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(Math.random() < 0.2);
-      }
-      break;
-    case 1:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.3);
-        chhsArray.push(Math.random() < 0.7);
-        snaresArray.push(Math.random() < 0.3);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(false);
-      }
-      break;
-    case 2:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.3);
-        chhsArray.push(false);
-        snaresArray.push(Math.random() < 0.5);
-        clsArray.push(Math.random() < 0.4);
-        ohhsArray.push(false);
-      }
-      break;
-    case 3:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(Math.random() < 0.25);
-        snaresArray.push(false);
-        clsArray.push(Math.random() < 0.4);
-        ohhsArray.push(false);
-      }
-      break;
-    case 4:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(false);
-        snaresArray.push(false);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    case 5:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.3);
-        chhsArray.push(Math.random() < 0.9);
-        snaresArray.push(Math.random() < 0.2);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(Math.random() < 0.4);
-      }
-      break;
-    case 6:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.5);
-        chhsArray.push(Math.random() < 1);
-        snaresArray.push(Math.random() < 0.2);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(false);
-      }
-      break;
-    case 7:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.5);
-        chhsArray.push(Math.random() < 1);
-        snaresArray.push(Math.random() < 0.2);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(Math.random() < 0.3);
-      }
-      break;
-    case 8:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.4);
-        chhsArray.push(Math.random() < 0.4);
-        snaresArray.push(Math.random() < 0.2);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(false);
-      }
-      break;
-    case 9:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.6);
-        chhsArray.push(false);
-        snaresArray.push(Math.random() < 0.6);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    case 10:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(false);
-        snaresArray.push(Math.random() < 0.8);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    default:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.3);
-        chhsArray.push(Math.random() < 0.9);
-        snaresArray.push(Math.random() < 0.2);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(Math.random() < 0.1);
-      }
-      break;
-  }
-}
-
-function randomBreak() {
-  kicksArray = [];
-  chhsArray = [];
-  snaresArray = [];
-  clsArray = [];
-  ohhsArray = [];
-  const randomIndex = Math.floor(Math.random() * 10);
-  switch (randomIndex) {
-    case 0:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.5);
-        chhsArray.push(false);
-        snaresArray.push(false);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    case 1:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(Math.random() < 0.5);
-        snaresArray.push(false);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    case 2:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(false);
-        snaresArray.push(Math.random() < 0.5);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    case 3:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(false);
-        snaresArray.push(false);
-        clsArray.push(Math.random() < 0.5);
-        ohhsArray.push(false);
-      }
-      break;
-    case 4:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(false);
-        snaresArray.push(false);
-        clsArray.push(false);
-        ohhsArray.push(Math.random() < 0.5);
-      }
-      break;
-    case 5:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(false);
-        snaresArray.push(Math.random() < 0.5);
-        clsArray.push(false);
-        ohhsArray.push(Math.random() < 0.5);
-      }
-      break;
-    case 6:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.5);
-        chhsArray.push(false);
-        snaresArray.push(Math.random() < 0.5);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    case 7:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.5);
-        chhsArray.push(false);
-        snaresArray.push(false);
-        clsArray.push(false);
-        ohhsArray.push(Math.random() < 0.5);
-      }
-      break;
-    case 8:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.5);
-        chhsArray.push(false);
-        snaresArray.push(false);
-        clsArray.push(Math.random() < 0.5);
-        ohhsArray.push(false);
-      }
-      break;
-    case 9:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(false);
-        chhsArray.push(false);
-        snaresArray.push(false);
-        clsArray.push(false);
-        ohhsArray.push(false);
-      }
-      break;
-    default:
-      for (let i = 0; i < timeSignature; i++) {
-        kicksArray.push(Math.random() < 0.3);
-        chhsArray.push(Math.random() < 0.7);
-        snaresArray.push(Math.random() < 0.3);
-        clsArray.push(Math.random() < 0.2);
-        ohhsArray.push(Math.random() < 0.2);
-      }
+  resetDrumSequence();
+  let hasOhh = Math.random() < 0.5;
+  for (let i = 0; i < timeSignature; i++) {
+    kicksArray.push(Math.random() < 0.5);
+    chhsArray.push(Math.random() < 0.7);
+    snaresArray.push(Math.random() < 0.3);
+    clsArray.push(Math.random() < 0.2);
+    if (hasOhh) {
+      ohhsArray.push(Math.random() < 0.3);
+    } else {
+      ohhsArray.push(false);
+    }
   }
 }
 
@@ -1145,7 +943,7 @@ function initFilters() {
     bassFilter,
     bassFilterFrequency,
     bassFilterFrequencyArrived,
-    "sawtooth",
+    "lowpass",
     10,
     false
   );
@@ -1153,7 +951,7 @@ function initFilters() {
     noteFilter,
     noteFilterFrequency,
     noteFilterFrequencyArrived,
-    "sawtooth",
+    "lowpass",
     10,
     true
   );
@@ -1161,7 +959,7 @@ function initFilters() {
     chordFilter,
     chordFilterFrequency,
     chordFilterFrequencyArrived,
-    "sawtooth",
+    "lowpass",
     10,
     true
   );
@@ -1169,7 +967,7 @@ function initFilters() {
     melodyFilter,
     melodyFilterFrequency,
     melodyFilterFrequencyArrived,
-    "sawtooth",
+    "lowpass",
     10,
     true
   );
