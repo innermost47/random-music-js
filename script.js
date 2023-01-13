@@ -66,10 +66,6 @@ const arabianDorian = [0, 2, 3, 6, 7, 9, 10];
 const modeOffsets = [
   aeolianModeOffsets,
   phrygianModeOffsets,
-  // dorianModeOffsets,
-  // lydianModeOffsets,
-  // ionianModeOffsets,
-  // mixolydianModeOffsets,
   arabian,
   arabianDorian,
 ];
@@ -79,8 +75,8 @@ const bassFilter = audioCtx.createBiquadFilter();
 const noteFilter = audioCtx.createBiquadFilter();
 const chordFilter = audioCtx.createBiquadFilter();
 const melodyFilter = audioCtx.createBiquadFilter();
-const delayNode = audioCtx.createDelay();
-const feedbackGainNode = audioCtx.createGain();
+const delay = audioCtx.createDelay();
+const delayGain = audioCtx.createGain();
 const octaves = [3, 4];
 const bassOctaves = [2];
 const songs = 10;
@@ -143,11 +139,10 @@ let noteFilterFrequency = 4000;
 let noteFilterFrequencyArrived = noteFilterFrequency / 2;
 let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
-
-delayNode.delayTime.value = delayTime;
-delayNode.connect(feedbackGainNode);
-feedbackGainNode.gain.value = 0.2;
-feedbackGainNode.connect(audioCtx.destination);
+let angle = 0;
+let radius = 0;
+let centerX = canvas.width / 2;
+let centerY = canvas.height / 2;
 
 function initDrumMachine() {
   kick = kickBuffers[Math.floor(Math.random() * kickBuffers.length)];
@@ -156,6 +151,27 @@ function initDrumMachine() {
   ohh = ohhBuffers[Math.floor(Math.random() * ohhBuffers.length)];
   cl = clBuffers[Math.floor(Math.random() * clBuffers.length)];
   cy = cyBuffers[0];
+}
+
+function initFilter(
+  filter,
+  filterFrequency,
+  filterFrequencyArrived,
+  type,
+  qValue,
+  isDelayed
+) {
+  filter.connect(audioCtx.destination);
+  if (isDelayed) {
+    filter.connect(delay);
+  }
+  filter.type = type;
+  filter.Q.value = qValue;
+  filter.frequency.setValueAtTime(filterFrequency, audioCtx.currentTime);
+  filter.frequency.linearRampToValueAtTime(
+    filterFrequencyArrived,
+    audioCtx.currentTime + attackTime
+  );
 }
 
 function initScale() {
@@ -169,14 +185,18 @@ function initScale() {
   chordsFrequencies = [];
   melodyFrequencies = [];
   melodyNotes = [];
+
   rootNote = chromaticScale[Math.floor(Math.random() * chromaticScale.length)];
   modeOffset = modeOffsets[Math.floor(Math.random() * modeOffsets.length)];
+
   scale = createMode(rootNote, modeOffset);
   bassScale = [scale[0], scale[2], scale[4], scale[6]];
+
   chords = [
     [scale[0] + "2", scale[2] + "2", scale[4] + "2"],
     [scale[0] + "2", scale[2] + "2", scale[6] + "2"],
   ];
+
   melodyNotes = [
     scale[0] + "3",
     scale[2] + "3",
@@ -189,32 +209,21 @@ function initScale() {
     scale[4] + "4",
     scale[6] + "4",
   ];
-  for (const octave of octaves) {
+
+  octaves.forEach((octave) => {
     for (const note of scale) {
       allNotes.push(`${note}${octave}`);
     }
-  }
-
-  for (const bassOctave of bassOctaves) {
+  });
+  bassOctaves.forEach((bassOctave) => {
     for (const note of bassScale) {
       bassNotes.push(`${note}${bassOctave}`);
     }
-  }
-
-  frequencies = allNotes.map((note) => {
-    const frequency = NOTES_JSON[note];
-    return frequency;
   });
 
-  melodyFrequencies = melodyNotes.map((note) => {
-    const frequency = NOTES_JSON[note];
-    return frequency;
-  });
-
-  bassFrequencies = bassNotes.map((note) => {
-    const frequency = NOTES_JSON[note];
-    return frequency;
-  });
+  frequencies = allNotes.map(getFrequencyFromNote);
+  melodyFrequencies = melodyNotes.map(getFrequencyFromNote);
+  bassFrequencies = bassNotes.map(getFrequencyFromNote);
 
   chordsFrequencies = chords.map((chord) => {
     let frequency = [];
@@ -223,6 +232,10 @@ function initScale() {
     }
     return frequency;
   });
+}
+
+function getFrequencyFromNote(note) {
+  return NOTES_JSON[note];
 }
 
 function createBassAndChords() {
@@ -401,15 +414,8 @@ function createBassAndChords() {
       break;
   }
 
-  bassFrequencies = bassNotes.map((note) => {
-    const frequency = NOTES_JSON[note];
-    return frequency;
-  });
-
-  melodyFrequencies = melodyNotes.map((note) => {
-    const frequency = NOTES_JSON[note];
-    return frequency;
-  });
+  melodyFrequencies = melodyNotes.map(getFrequencyFromNote);
+  bassFrequencies = bassNotes.map(getFrequencyFromNote);
 
   chordsFrequencies = chords.map((chord) => {
     let frequency = [];
@@ -424,6 +430,8 @@ function initTime() {
   const numbers = [3, 4];
   timeSignature = numbers[Math.floor(Math.random() * numbers.length)] * 4;
   decayTime = 0.1;
+  delay.delayTime.value = 0.5;
+  delayGain.gain.value = 0.2;
 }
 
 function createMode(tonic, modeOffsets) {
@@ -444,6 +452,17 @@ function getRandomColor() {
   return "rgb(" + r + ", " + g + ", " + b + ")";
 }
 
+function disconnectAll(oscs, gains, duration) {
+  setTimeout(() => {
+    for (let i = 0; i < oscs.length; i++) {
+      oscs[i].disconnect();
+    }
+    for (let i = 0; i < gains.length; i++) {
+      gains[i].disconnect();
+    }
+  }, duration * 1000);
+}
+
 function playBass(frequency, duration, filter) {
   let oscillator = audioCtx.createOscillator();
   let oscillator2 = audioCtx.createOscillator();
@@ -452,21 +471,6 @@ function playBass(frequency, duration, filter) {
 
   oscillator.type = "sine";
   oscillator2.type = "sawtooth";
-
-  filter.type = "lowpass";
-  filter.frequency.value = bassFilterFrequency;
-  filter.Q.value = 10;
-
-  filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
-
-  filter.frequency.linearRampToValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime
-  );
-  filter.frequency.linearRampToValueAtTime(
-    bassFilterFrequencyArrived,
-    audioCtx.currentTime + attackTime + decayTime
-  );
 
   oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
   oscillateurGain.gain.linearRampToValueAtTime(
@@ -485,8 +489,6 @@ function playBass(frequency, duration, filter) {
   oscillator2.connect(oscillateur2Gain);
   oscillateur2Gain.connect(filter);
 
-  filter.connect(audioCtx.destination);
-
   oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
   oscillator2.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
@@ -496,70 +498,30 @@ function playBass(frequency, duration, filter) {
   oscillator2.start(audioCtx.currentTime);
   oscillator2.stop(audioCtx.currentTime + duration);
 
-  setTimeout(() => {
-    oscillator.disconnect();
-    oscillateurGain.disconnect();
-    oscillateurGain = null;
-    oscillator = null;
-    oscillator2.disconnect();
-    oscillateur2Gain.disconnect();
-    oscillateur2Gain = null;
-    oscillator2 = null;
-  }, duration * 1000);
+  disconnectAll(
+    [oscillator, oscillator2],
+    [oscillateurGain, oscillateur2Gain],
+    duration
+  );
 }
 
 function playChord(frequencies, duration, filter) {
   let oscillator = audioCtx.createOscillator();
   let oscillator2 = audioCtx.createOscillator();
   let oscillator3 = audioCtx.createOscillator();
-  let oscillateurGain = audioCtx.createGain();
-  let oscillateur2Gain = audioCtx.createGain();
-  let oscillateur3Gain = audioCtx.createGain();
+  let gain = audioCtx.createGain();
 
   oscillator.type = "sawtooth";
   oscillator2.type = "sawtooth";
   oscillator3.type = "sawtooth";
 
-  filter.type = "lowpass";
-  filter.frequency.value = chordFilterFrequency;
-  filter.Q.value = 10;
+  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration / 2);
 
-  filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
-
-  filter.frequency.linearRampToValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime
-  );
-  filter.frequency.linearRampToValueAtTime(
-    chordFilterFrequencyArrived,
-    audioCtx.currentTime + attackTime + decayTime
-  );
-
-  oscillateurGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  oscillateurGain.gain.linearRampToValueAtTime(
-    0,
-    audioCtx.currentTime + duration / 2
-  );
-  oscillateur2Gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  oscillateur2Gain.gain.linearRampToValueAtTime(
-    0,
-    audioCtx.currentTime + duration / 2
-  );
-  oscillateur3Gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  oscillateur3Gain.gain.linearRampToValueAtTime(
-    0,
-    audioCtx.currentTime + duration / 2
-  );
-
-  oscillator.connect(oscillateurGain);
-  oscillator2.connect(oscillateur2Gain);
-  oscillator3.connect(oscillateur3Gain);
-  oscillateurGain.connect(filter);
-  oscillateur2Gain.connect(filter);
-  oscillateur3Gain.connect(filter);
-
-  filter.connect(delayNode);
-  filter.connect(audioCtx.destination);
+  oscillator.connect(gain);
+  oscillator2.connect(gain);
+  oscillator3.connect(gain);
+  gain.connect(filter);
 
   oscillator.frequency.setValueAtTime(frequencies[0] * 2, audioCtx.currentTime);
   oscillator2.frequency.setValueAtTime(
@@ -578,98 +540,40 @@ function playChord(frequencies, duration, filter) {
   oscillator3.start(audioCtx.currentTime);
   oscillator3.stop(audioCtx.currentTime + duration);
 
-  setTimeout(() => {
-    oscillator.disconnect();
-    oscillateurGain.disconnect();
-    oscillateurGain = null;
-    oscillator = null;
-    oscillator2.disconnect();
-    oscillateur2Gain.disconnect();
-    oscillateurGain = null;
-    oscillator2 = null;
-    oscillator3.disconnect();
-    oscillateur3Gain.disconnect();
-    oscillateur3Gain = null;
-    oscillator3 = null;
-  }, duration * 1000);
+  disconnectAll([oscillator, oscillator2, oscillator3], [gain], duration);
 }
 
 function playNote(frequency, duration, filter) {
   let oscillator = audioCtx.createOscillator();
-  let oscillateurGain = audioCtx.createGain();
+  let gain = audioCtx.createGain();
 
   oscillator.type = "sawtooth";
 
-  filter.type = "lowpass";
-  filter.frequency.value = noteFilterFrequency;
-  filter.Q.value = 10;
+  gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
 
-  filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
-
-  filter.frequency.linearRampToValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime
-  );
-  filter.frequency.linearRampToValueAtTime(
-    noteFilterFrequencyArrived,
-    audioCtx.currentTime + attackTime + decayTime
-  );
-
-  oscillateurGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-  oscillateurGain.gain.linearRampToValueAtTime(
-    0,
-    audioCtx.currentTime + duration
-  );
-
-  oscillator.connect(oscillateurGain);
-  oscillateurGain.connect(filter);
-  filter.connect(delayNode);
-  filter.connect(audioCtx.destination);
+  oscillator.connect(gain);
+  gain.connect(filter);
   oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
   oscillator.start(audioCtx.currentTime);
 
   oscillator.stop(audioCtx.currentTime + duration);
 
-  setTimeout(() => {
-    oscillator.disconnect();
-    oscillateurGain.disconnect();
-    oscillateurGain = null;
-    oscillator = null;
-  }, duration * 1000);
+  disconnectAll([oscillator], [gain], duration);
 }
 
 function playMelody(frequency, duration, filter) {
   let oscillator = audioCtx.createOscillator();
-  let oscillateurGain = audioCtx.createGain();
+  let gain = audioCtx.createGain();
 
   oscillator.type = "square";
 
-  filter.type = "lowpass";
-  filter.frequency.value = melodyFilterFrequency;
-  filter.Q.value = 10;
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
 
-  filter.frequency.setValueAtTime(filter.frequency.value, audioCtx.currentTime);
-
-  filter.frequency.linearRampToValueAtTime(
-    filter.frequency.value,
-    audioCtx.currentTime + attackTime
-  );
-  filter.frequency.linearRampToValueAtTime(
-    melodyFilterFrequencyArrived,
-    audioCtx.currentTime + attackTime + decayTime
-  );
-
-  oscillateurGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-  oscillateurGain.gain.linearRampToValueAtTime(
-    0,
-    audioCtx.currentTime + duration
-  );
-
-  oscillator.connect(oscillateurGain);
-  oscillateurGain.connect(filter);
-  filter.connect(delayNode);
-  filter.connect(audioCtx.destination);
+  oscillator.connect(gain);
+  gain.connect(filter);
 
   oscillator.frequency.setValueAtTime(frequency * 2, audioCtx.currentTime);
 
@@ -677,12 +581,7 @@ function playMelody(frequency, duration, filter) {
 
   oscillator.stop(audioCtx.currentTime + duration);
 
-  setTimeout(() => {
-    oscillator.disconnect();
-    oscillateurGain.disconnect();
-    oscillateurGain = null;
-    oscillator = null;
-  }, duration * 1000);
+  disconnectAll([oscillator], [gain], duration);
 }
 
 function playSequence() {
@@ -698,23 +597,9 @@ function playSequence() {
     if (currentMeasure === measures) {
       randomRiddim();
       if (currentSongDuration > 1) {
-        if (currentSongDuration > 4 && Math.random() < 0.3) {
-          createBassAndChords();
-          generateNextMusicalColor();
-        }
-        if (currentSongDuration > 3) {
-          randomizer = Math.random();
-        }
-        if (Math.random() < 0.6) {
-          generateNextMusicalColor();
-        }
-        if (Math.random() < 0.2 && currentSongDuration > 12) {
-          noteArray = noteThemeArray;
-          bassArray = bassThemeArray;
-          chordArray = chordThemeArray;
-          melodyArray = melodyThemeArray;
-        }
+        checkActions();
       }
+      randomizer = Math.random();
       currentMeasure = 0;
       currentSongDuration++;
       if (currentSongDuration > 0) {
@@ -740,36 +625,31 @@ function playSequence() {
       }
     }
   }
-  if (
-    kicksArray[currentStep] ||
-    (currentStep == 0 && currentSongDuration > 0)
-  ) {
-    playPercussionWithVelocity(kick, 1);
+  playDrum();
+  playBassAndChords();
+  playInstruments(randomizer);
+}
+
+function checkActions() {
+  let actionTaken = false;
+  if (currentSongDuration > 4 && Math.random() < 0.3) {
+    createBassAndChords();
+    generateNextMusicalColor();
+    actionTaken = true;
   }
-  if (chhsArray[currentStep]) {
-    playPercussionWithVelocity(
-      chh,
-      velocities[Math.floor(Math.random() * velocities.length)]
-    );
+  if (!actionTaken && Math.random() < 0.6) {
+    generateNextMusicalColor();
+    actionTaken = true;
   }
-  if (snaresArray[currentStep]) {
-    playPercussionWithVelocity(
-      snare,
-      velocities[Math.floor(Math.random() * velocities.length)]
-    );
+  if (!actionTaken && Math.random() < 0.2 && currentSongDuration > 12) {
+    noteArray = noteThemeArray;
+    bassArray = bassThemeArray;
+    chordArray = chordThemeArray;
+    melodyArray = melodyThemeArray;
   }
-  if (ohhsArray[currentStep]) {
-    playPercussionWithVelocity(
-      ohh,
-      velocities[Math.floor(Math.random() * velocities.length)]
-    );
-  }
-  if (clsArray[currentStep]) {
-    playPercussionWithVelocity(
-      cl,
-      velocities[Math.floor(Math.random() * velocities.length)]
-    );
-  }
+}
+
+function playBassAndChords() {
   if (currentSongDuration > 0) {
     if (bassArray[currentStep] != null) {
       playBass(
@@ -788,41 +668,63 @@ function playSequence() {
       );
     }
   }
-  if (randomizer < 1 / 3) {
-    if (Math.random() < 0.5) {
-      if (noteArray[currentStep] != null) {
+}
+
+function playInstruments(randomizer) {
+  let notes = [noteArray, melodyArray];
+  switch (true) {
+    case randomizer < 1 / 3:
+      if (Math.random() < 0.5) {
         playNote(
-          noteArray[currentStep].note,
-          noteArray[currentStep].duration,
+          notes[0][currentStep].note,
+          notes[0][currentStep].duration,
           noteFilter
         );
-      }
-    } else {
-      if (melodyArray[currentStep] != null) {
+      } else {
         playMelody(
-          melodyArray[currentStep].note,
-          melodyArray[currentStep].duration,
+          notes[1][currentStep].note,
+          notes[1][currentStep].duration,
           melodyFilter
         );
       }
-    }
-  } else if (randomizer >= 1 / 3 && randomizer < 2 / 3) {
-    if (noteArray[currentStep] != null) {
+      break;
+    case randomizer >= 1 / 3 && randomizer < 2 / 3:
       playNote(
-        noteArray[currentStep].note,
-        noteArray[currentStep].duration,
+        notes[0][currentStep].note,
+        notes[0][currentStep].duration,
         noteFilter
       );
-    }
-  } else if (randomizer >= 2 / 3 && randomizer < 1) {
-    if (melodyArray[currentStep] != null) {
+      break;
+    case randomizer >= 2 / 3:
       playMelody(
-        melodyArray[currentStep].note,
-        melodyArray[currentStep].duration,
+        notes[1][currentStep].note,
+        notes[1][currentStep].duration,
         melodyFilter
       );
-    }
+      break;
   }
+}
+
+function playDrum() {
+  let percussions = [
+    { array: kicksArray, type: kick },
+    { array: chhsArray, type: chh, velocity: true },
+    { array: snaresArray, type: snare, velocity: true },
+    { array: ohhsArray, type: ohh, velocity: true },
+    { array: clsArray, type: cl, velocity: true },
+  ];
+  percussions.forEach(({ array, type, velocity }) => {
+    if (array[currentStep] || (currentStep === 0 && currentSongDuration > 0)) {
+      if (velocity) {
+        playPercussionWithVelocity(
+          type,
+          velocities[Math.floor(Math.random() * velocities.length)]
+        );
+      } else {
+        playPercussionWithVelocity(type, 1);
+      }
+    }
+  });
 }
 
 function generateNextMusicalColor() {
@@ -1238,7 +1140,45 @@ function generateRandomMelody(frequencies) {
   return sequence;
 }
 
+function initFilters() {
+  initFilter(
+    bassFilter,
+    bassFilterFrequency,
+    bassFilterFrequencyArrived,
+    "sawtooth",
+    10,
+    false
+  );
+  initFilter(
+    noteFilter,
+    noteFilterFrequency,
+    noteFilterFrequencyArrived,
+    "sawtooth",
+    10,
+    true
+  );
+  initFilter(
+    chordFilter,
+    chordFilterFrequency,
+    chordFilterFrequencyArrived,
+    "sawtooth",
+    10,
+    true
+  );
+  initFilter(
+    melodyFilter,
+    melodyFilterFrequency,
+    melodyFilterFrequencyArrived,
+    "sawtooth",
+    10,
+    true
+  );
+}
+
 function start() {
+  initFilters();
+  delay.connect(delayGain);
+  delayGain.connect(audioCtx.destination);
   initTime();
   initDrumMachine();
   initScale();
@@ -1246,6 +1186,13 @@ function start() {
 }
 
 function stopSound() {
+  bassFilter.disconnect();
+  noteFilter.disconnect();
+  chordFilter.disconnect();
+  melodyFilter.disconnect();
+  delay.disconnect();
+  delayGain.disconnect();
+  currentStep = 0;
   currentMeasure = 0;
   currentSongDuration = 0;
   currentSong = 0;
@@ -1267,36 +1214,22 @@ stop.addEventListener("click", () => {
   stopSound();
 });
 
-let angle = 0;
-let radius = 0;
-let centerX = canvas.width / 2;
-let centerY = canvas.height / 2;
-
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.strokeStyle = getRandomColor();
 
-  // Boucle de dessin de la spirale
-  for (var i = 0; i < 100; i++) {
-    // Calcul de la position du prochain point de la spirale
+  for (let i = 0; i < 100; i++) {
     let x = centerX + Math.random() * radius * Math.cos(angle);
     let y = centerY + Math.random() * radius * Math.sin(angle);
-    // Appliquer une rotation basée sur l'angle de la spirale
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.rotate(angle);
     ctx.translate(-centerX, -centerY);
-
-    // Dessin du segment de ligne entre ce point et le point précédent
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(centerX, centerY);
     ctx.stroke();
-
-    // Annuler la rotation
     ctx.restore();
-
-    // Mise à jour des valeurs
     radius += 2;
     angle += 0.1;
   }
