@@ -2,9 +2,9 @@ import { startDraw, stopDraw } from "./draw.js";
 import { start, stopSound } from "./heightBits.js";
 import { startSine, stopSine } from "./sine.js";
 
-const playEightBits = document.getElementById("play");
+const play = document.getElementById("play");
 const stopSong = document.getElementById("stop");
-const playSine = document.getElementById("startSine");
+const songs = [start, startSine];
 
 let isPlaying = false;
 
@@ -15,11 +15,10 @@ function stopAll() {
   stopDraw();
 }
 
-playEightBits.addEventListener("click", () => {
+play.addEventListener("click", () => {
   isPlaying = !isPlaying;
   if (isPlaying) {
-    start();
-    stopSine();
+    songs[Math.floor(Math.random() * songs.length)]();
     startDraw();
   } else {
     stopAll();
@@ -28,15 +27,4 @@ playEightBits.addEventListener("click", () => {
 
 stopSong.addEventListener("click", () => {
   stopAll();
-});
-
-playSine.addEventListener("click", () => {
-  isPlaying = !isPlaying;
-  if (isPlaying) {
-    startSine();
-    stopSound();
-    startDraw();
-  } else {
-    stopAll();
-  }
 });
