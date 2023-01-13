@@ -13,8 +13,6 @@ const bpm = 45;
 const totalSteps = 16;
 const measuresNumber = 8;
 const timer = new Timer();
-const start = document.getElementById("startSine");
-const stop = document.getElementById("stopSine");
 
 let melodyNotes = [];
 let currentStep = 0;
@@ -296,7 +294,7 @@ function play() {
   }
 }
 
-function startSine() {
+export function startSine() {
   createChords();
   initFX();
   connect();
@@ -309,21 +307,7 @@ function startSine() {
   timer.start();
 }
 
-function stopSine() {
+export function stopSine() {
   timer.stop();
   disconnect();
 }
-
-start.addEventListener("click", () => {
-  isPlaying = !isPlaying;
-  if (isPlaying) {
-    startSine();
-  } else {
-    stopSine();
-  }
-});
-
-stop.addEventListener("click", () => {
-  isPlaying = false;
-  stopSine();
-});
