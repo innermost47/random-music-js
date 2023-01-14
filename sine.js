@@ -1,9 +1,8 @@
+import { Enveloppe } from "./Enveloppe.js";
+import { Mode } from "./Mode.js";
+import { Synth } from "./Synth.js";
 import { Timer } from "./Timer.js";
 
-const frequencies = [
-  220.0, 246.94, 261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25,
-  587.33, 659.26, 698.46, 783.99, 880.0,
-];
 const audioCtx = new AudioContext();
 const delay = audioCtx.createDelay();
 const feedback = audioCtx.createGain();
@@ -12,7 +11,19 @@ const filterGain = audioCtx.createGain();
 const bpm = 45;
 const totalSteps = 16;
 const measuresNumber = 8;
+const SINE = "sine";
 const timer = new Timer();
+const mode = new Mode();
+const bassSynth = new Synth();
+const fundamentalSynth = new Synth();
+const thirdSynth = new Synth();
+const fifthSynth = new Synth();
+const melodySynth = new Synth();
+const bassEnveloppe = new Enveloppe();
+const fundamentalEnveloppe = new Enveloppe();
+const thirdEnveloppe = new Enveloppe();
+const fifthEnveloppe = new Enveloppe();
+const melodyEnveloppe = new Enveloppe();
 
 let melodyNotes = [];
 let currentStep = 0;
@@ -22,7 +33,43 @@ let third = [];
 let fifth = [];
 let bass = [];
 let currentMeasure = 0;
-let isPlaying = false;
+let frequencies = [];
+
+function init() {
+  mode.mode = "ionian";
+  mode.rootNote = "A";
+  bassEnveloppe.attack = 0.3;
+  bassEnveloppe.release = 0;
+  bassSynth.audioCtx = audioCtx;
+  bassSynth.audioDestination = filter;
+  bassSynth.enveloppe = bassEnveloppe;
+  bassSynth.type = SINE;
+  fundamentalEnveloppe.attack = 0.3;
+  fundamentalEnveloppe.release = 0;
+  fundamentalSynth.audioCtx = audioCtx;
+  fundamentalSynth.audioDestination = filter;
+  fundamentalSynth.enveloppe = bassEnveloppe;
+  fundamentalSynth.type = SINE;
+  thirdEnveloppe.attack = 0.3;
+  thirdEnveloppe.release = 0;
+  thirdSynth.audioCtx = audioCtx;
+  thirdSynth.audioDestination = filter;
+  thirdSynth.enveloppe = bassEnveloppe;
+  thirdSynth.type = SINE;
+  fifthEnveloppe.attack = 0.3;
+  fifthEnveloppe.release = 0;
+  fifthSynth.audioCtx = audioCtx;
+  fifthSynth.audioDestination = filter;
+  fifthSynth.enveloppe = bassEnveloppe;
+  fifthSynth.type = SINE;
+  melodyEnveloppe.attack = 0.3;
+  melodyEnveloppe.release = 0;
+  melodySynth.audioCtx = audioCtx;
+  melodySynth.audioDestination = filter;
+  melodySynth.enveloppe = bassEnveloppe;
+  melodySynth.type = SINE;
+  frequencies = mode.getFrequenciesFromMode([3, 4, 5]);
+}
 
 function createChords() {
   for (let i = 0; i < frequencies.length - 4; i++) {
@@ -33,7 +80,7 @@ function createChords() {
 function initFX() {
   filter.frequency.value = 10000;
   filter.Q.value = 0;
-  filterGain.gain.value = 0;
+  filterGain.gain.value = 1;
   delay.delayTime.value = 1;
   feedback.gain.value = 0.1;
 }
@@ -51,101 +98,7 @@ function disconnect() {
   filter.disconnect();
   delay.disconnect();
   feedback.disconnect();
-}
-
-function bassSynth(frequency, duration) {
-  let oscillator = audioCtx.createOscillator();
-  let gain = audioCtx.createGain();
-
-  oscillator.type = "sine";
-  oscillator.connect(gain);
-  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
-  gain.connect(filter);
-  oscillator.frequency.value = frequency / 2;
-  oscillator.start(audioCtx.currentTime);
-  oscillator.stop(audioCtx.currentTime + duration);
-
-  setTimeout(() => {
-    oscillator.disconnect();
-    gain.disconnect();
-  }, 1000);
-}
-
-function fundamentalSynth(frequency, duration) {
-  let oscillator = audioCtx.createOscillator();
-  let gain = audioCtx.createGain();
-
-  oscillator.type = "sine";
-  oscillator.connect(gain);
-  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
-  gain.connect(filter);
-  oscillator.frequency.value = frequency;
-  oscillator.start(audioCtx.currentTime);
-  oscillator.stop(audioCtx.currentTime + duration);
-
-  setTimeout(() => {
-    oscillator.disconnect();
-    gain.disconnect();
-  }, 1000);
-}
-
-function thirdSynth(frequency, duration) {
-  let oscillator = audioCtx.createOscillator();
-  let gain = audioCtx.createGain();
-
-  oscillator.type = "sine";
-  oscillator.connect(gain);
-  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
-  gain.connect(filter);
-  oscillator.frequency.value = frequency;
-  oscillator.start(audioCtx.currentTime);
-  oscillator.stop(audioCtx.currentTime + duration);
-
-  setTimeout(() => {
-    oscillator.disconnect();
-    gain.disconnect();
-  }, 1000);
-}
-
-function fifthSynth(frequency, duration) {
-  let oscillator = audioCtx.createOscillator();
-  let gain = audioCtx.createGain();
-
-  oscillator.type = "sine";
-  oscillator.connect(gain);
-  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
-  gain.connect(filter);
-  oscillator.frequency.value = frequency;
-  oscillator.start(audioCtx.currentTime);
-  oscillator.stop(audioCtx.currentTime + duration);
-
-  setTimeout(() => {
-    oscillator.disconnect();
-    gain.disconnect();
-  }, 1000);
-}
-
-function melodySynth(frequency, duration) {
-  let oscillator = audioCtx.createOscillator();
-  let gain = audioCtx.createGain();
-
-  oscillator.type = "sine";
-  oscillator.connect(gain);
-  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
-  gain.connect(filter);
-  oscillator.frequency.value = frequency;
-  oscillator.start(audioCtx.currentTime);
-  oscillator.stop(audioCtx.currentTime + duration);
-
-  setTimeout(() => {
-    oscillator.disconnect();
-    gain.disconnect();
-  }, 1000);
+  bass.disconnect();
 }
 
 function generateRandomNoteSequence(frequencies) {
@@ -266,7 +219,7 @@ function generateBassSequence(notes) {
 
 function playNote(array, instrument) {
   if (array[currentStep] != null) {
-    instrument(array[currentStep].note, array[currentStep].duration);
+    instrument.play(array[currentStep].note, array[currentStep].duration);
   }
 }
 
@@ -295,6 +248,7 @@ function play() {
 }
 
 export function startSine() {
+  init();
   createChords();
   initFX();
   connect();
