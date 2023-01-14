@@ -28,10 +28,8 @@ export class Synth {
   }
 
   disconnect() {
-    setTimeout(() => {
-      this.oscillator.disconnect();
-      this.gain.disconnect();
-    }, 1000);
+    this.oscillator.disconnect();
+    this.gain.disconnect();
   }
 
   get audioCtx() {

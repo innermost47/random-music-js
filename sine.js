@@ -98,7 +98,11 @@ function disconnect() {
   filter.disconnect();
   delay.disconnect();
   feedback.disconnect();
-  bass.disconnect();
+  bassSynth.disconnect();
+  melodySynth.disconnect();
+  fundamentalSynth.disconnect();
+  thirdSynth.disconnect();
+  fifthSynth.disconnect();
 }
 
 function generateRandomNoteSequence(frequencies) {
@@ -247,7 +251,13 @@ function play() {
   }
 }
 
+function initSteps() {
+  currentStep = 0;
+  currentMeasure = 0;
+}
+
 export function startSine() {
+  initSteps();
   init();
   createChords();
   initFX();
@@ -262,6 +272,7 @@ export function startSine() {
 }
 
 export function stopSine() {
+  initSteps();
   timer.stop();
   disconnect();
 }
