@@ -2,28 +2,26 @@ import { Enveloppe } from "./Enveloppe.js";
 import { Mode } from "./Mode.js";
 import { Synth } from "./Synth.js";
 import { Timer } from "./Timer.js";
+import {
+  generateNoteForBass,
+  generateNoteSequenceForChord,
+  generateNotesForArpegiator,
+  generateRandomNoteSequence,
+} from "./utils.js";
 
 const audioCtx = new AudioContext();
 const delay = audioCtx.createDelay();
 const feedback = audioCtx.createGain();
 const filter = audioCtx.createBiquadFilter();
 const filterGain = audioCtx.createGain();
-const bpm = 45;
-const totalSteps = 16;
-const measuresNumber = 8;
+const bpm = 90;
+const totalSteps = 64;
+const measuresNumber = 32;
 const SINE = "sine";
 const timer = new Timer();
 const mode = new Mode();
-const bassSynth = new Synth();
-const fundamentalSynth = new Synth();
-const thirdSynth = new Synth();
-const fifthSynth = new Synth();
-const melodySynth = new Synth();
-const bassEnveloppe = new Enveloppe();
-const fundamentalEnveloppe = new Enveloppe();
-const thirdEnveloppe = new Enveloppe();
-const fifthEnveloppe = new Enveloppe();
-const melodyEnveloppe = new Enveloppe();
+const sineSynth = new Synth();
+const sineEnveloppe = new Enveloppe();
 
 let melodyNotes = [];
 let currentStep = 0;
@@ -32,42 +30,19 @@ let fundamental = [];
 let third = [];
 let fifth = [];
 let bass = [];
+let arpegio = [];
 let currentMeasure = 0;
 let frequencies = [];
 
 function init() {
-  mode.mode = "ionian";
-  mode.rootNote = "A";
-  bassEnveloppe.attack = 0.3;
-  bassEnveloppe.release = 0;
-  bassSynth.audioCtx = audioCtx;
-  bassSynth.audioDestination = filter;
-  bassSynth.enveloppe = bassEnveloppe;
-  bassSynth.type = SINE;
-  fundamentalEnveloppe.attack = 0.3;
-  fundamentalEnveloppe.release = 0;
-  fundamentalSynth.audioCtx = audioCtx;
-  fundamentalSynth.audioDestination = filter;
-  fundamentalSynth.enveloppe = bassEnveloppe;
-  fundamentalSynth.type = SINE;
-  thirdEnveloppe.attack = 0.3;
-  thirdEnveloppe.release = 0;
-  thirdSynth.audioCtx = audioCtx;
-  thirdSynth.audioDestination = filter;
-  thirdSynth.enveloppe = bassEnveloppe;
-  thirdSynth.type = SINE;
-  fifthEnveloppe.attack = 0.3;
-  fifthEnveloppe.release = 0;
-  fifthSynth.audioCtx = audioCtx;
-  fifthSynth.audioDestination = filter;
-  fifthSynth.enveloppe = bassEnveloppe;
-  fifthSynth.type = SINE;
-  melodyEnveloppe.attack = 0.3;
-  melodyEnveloppe.release = 0;
-  melodySynth.audioCtx = audioCtx;
-  melodySynth.audioDestination = filter;
-  melodySynth.enveloppe = bassEnveloppe;
-  melodySynth.type = SINE;
+  mode.mode = "aeolian";
+  mode.rootNote = "F";
+  sineEnveloppe.attack = 0.1;
+  sineEnveloppe.release = 0;
+  sineSynth.audioCtx = audioCtx;
+  sineSynth.audioDestination = filter;
+  sineSynth.enveloppe = sineEnveloppe;
+  sineSynth.type = SINE;
   frequencies = mode.getFrequenciesFromMode([3, 4, 5]);
 }
 
@@ -82,7 +57,7 @@ function initFX() {
   filter.Q.value = 0;
   filterGain.gain.value = 1;
   delay.delayTime.value = 1;
-  feedback.gain.value = 0.1;
+  feedback.gain.value = 0.05;
 }
 
 function connect() {
@@ -98,127 +73,40 @@ function disconnect() {
   filter.disconnect();
   delay.disconnect();
   feedback.disconnect();
-  bassSynth.disconnect();
-  melodySynth.disconnect();
-  fundamentalSynth.disconnect();
-  thirdSynth.disconnect();
-  fifthSynth.disconnect();
-}
-
-function generateRandomNoteSequence(frequencies) {
-  const sequence = [];
-  let random = Math.random();
-  for (let i = 0; i < totalSteps; i++) {
-    if (random < 0.05) {
-      let note = false;
-      let duration = "";
-      sequence.push({ note, duration });
-    } else {
-      if (Math.random() < 0.4) {
-        let note = frequencies[Math.floor(Math.random() * frequencies.length)];
-        let duration = totalSteps / bpm;
-        sequence.push({ note, duration });
-      } else {
-        let note = false;
-        let duration = "";
-        sequence.push({ note, duration });
-      }
-    }
-  }
-  for (let i = 0; i < sequence.length; i++) {
-    if (sequence[i].note != false) {
-      sequence[i].duration = totalSteps / bpm;
-      let j = i + 1;
-      while (sequence[j] && sequence[j].note === false) {
-        sequence[i].duration += totalSteps / bpm;
-        j++;
-      }
-    }
-  }
-  return sequence;
-}
-
-function generateNoteSequenceForChord(noteIndex) {
-  const sequence = [];
-  let random = Math.random();
-  for (let i = 0; i < totalSteps; i++) {
-    if (random < 0.05) {
-      let note = false;
-      let duration = "";
-      sequence.push({ note, duration });
-    } else {
-      if (Math.random() < 0.5) {
-        let note = frequencies[noteIndex];
-        let duration = totalSteps / bpm;
-        sequence.push({ note, duration });
-      } else {
-        let note = false;
-        let duration = "";
-        sequence.push({ note, duration });
-      }
-    }
-  }
-  for (let i = 0; i < sequence.length; i++) {
-    if (sequence[i].note != false) {
-      sequence[i].duration = totalSteps / bpm;
-      let j = i + 1;
-      while (sequence[j] && sequence[j].note === false) {
-        sequence[i].duration += totalSteps / bpm;
-        j++;
-      }
-    }
-  }
-  return sequence;
-}
-
-function generateNoteForBass(notesIndex) {
-  const sequence = [];
-  let random = Math.random();
-  for (let i = 0; i < totalSteps; i++) {
-    if (random < 0.05) {
-      let note = false;
-      let duration = "";
-      sequence.push({ note, duration });
-    } else {
-      if (Math.random() < 0.5) {
-        let note =
-          frequencies[
-            notesIndex[Math.floor(Math.random() * notesIndex.length)]
-          ];
-        let duration = totalSteps / bpm;
-        sequence.push({ note, duration });
-      } else {
-        let note = false;
-        let duration = "";
-        sequence.push({ note, duration });
-      }
-    }
-  }
-  for (let i = 0; i < sequence.length; i++) {
-    if (sequence[i].note != false) {
-      sequence[i].duration = totalSteps / bpm;
-      let j = i + 1;
-      while (sequence[j] && sequence[j].note === false) {
-        sequence[i].duration += totalSteps / bpm;
-        j++;
-      }
-    }
-  }
-  return sequence;
+  sineSynth.disconnect();
 }
 
 function generateMelodySequence() {
-  melodyNotes = generateRandomNoteSequence(frequencies);
+  melodyNotes = generateRandomNoteSequence(frequencies, totalSteps, bpm);
 }
 
 function generateChordSequence(fundamentalNote) {
-  fundamental = generateNoteSequenceForChord(fundamentalNote);
-  third = generateNoteSequenceForChord(fundamentalNote + 2);
-  fifth = generateNoteSequenceForChord(fundamentalNote + 4);
+  fundamental = generateNoteSequenceForChord(
+    frequencies,
+    fundamentalNote,
+    totalSteps,
+    bpm
+  );
+  third = generateNoteSequenceForChord(
+    frequencies,
+    fundamentalNote + 2,
+    totalSteps,
+    bpm
+  );
+  fifth = generateNoteSequenceForChord(
+    frequencies,
+    fundamentalNote + 4,
+    totalSteps,
+    bpm
+  );
 }
 
 function generateBassSequence(notes) {
-  bass = generateNoteForBass(notes);
+  bass = generateNoteForBass(frequencies, notes, totalSteps, bpm);
+}
+
+function generateArpegiatorSequence(notes) {
+  arpegio = generateNotesForArpegiator(frequencies, notes, totalSteps, bpm);
 }
 
 function playNote(array, instrument) {
@@ -228,11 +116,12 @@ function playNote(array, instrument) {
 }
 
 function play() {
-  playNote(melodyNotes, melodySynth);
-  playNote(fundamental, fundamentalSynth);
-  playNote(third, thirdSynth);
-  playNote(fifth, fifthSynth);
-  playNote(bass, bassSynth);
+  playNote(melodyNotes, sineSynth);
+  playNote(fundamental, sineSynth);
+  playNote(third, sineSynth);
+  playNote(fifth, sineSynth);
+  playNote(bass, sineSynth);
+  playNote(arpegio, sineSynth);
   currentStep++;
   if (currentStep === totalSteps) {
     currentStep = 0;
@@ -242,11 +131,18 @@ function play() {
       generateMelodySequence();
       generateChordSequence(0);
       generateBassSequence([0, 2, 4]);
+      generateArpegiatorSequence([14, 16, 18, 19]);
     } else {
       let noteIndex = Math.floor(Math.random() * (frequencies.length / 2));
       generateMelodySequence();
       generateChordSequence(noteIndex);
       generateBassSequence([noteIndex, noteIndex + 2, noteIndex + 3]);
+      generateArpegiatorSequence([
+        noteIndex,
+        noteIndex + 2,
+        noteIndex + 4,
+        noteIndex + 5,
+      ]);
     }
   }
 }
@@ -264,7 +160,7 @@ export function startSine() {
   connect();
   generateMelodySequence();
   generateChordSequence(0);
-  generateBassSequence([0, 2, 4]);
+  generateArpegiatorSequence([14, 16, 18, 19]);
   timer._callback = play;
   timer._errorCallback = "error";
   timer._timeInterval = (6000 / bpm / 4) * 10;

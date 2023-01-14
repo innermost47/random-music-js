@@ -100,6 +100,7 @@ let ohh;
 let cl;
 let snare;
 let cy;
+let decayTime;
 let kicksArray = [];
 let chhsArray = [];
 let snaresArray = [];

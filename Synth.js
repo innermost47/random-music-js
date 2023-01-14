@@ -24,6 +24,10 @@ export class Synth {
     this.gain.connect(this.audioDestination);
     this.oscillator.frequency.value = frequency;
     this.oscillator.start(this.audioCtx.currentTime);
+    this.stop(duration);
+  }
+
+  stop(duration) {
     this.oscillator.stop(this.audioCtx.currentTime + duration);
   }
 
