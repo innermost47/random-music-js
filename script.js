@@ -4,21 +4,27 @@ import { startSine, stopSine } from "./sine.js";
 
 const play = document.getElementById("play");
 const stopSong = document.getElementById("stop");
-const songs = [start, startSine];
+const startSongs = [start, startSine];
+const stopSongs = [stopSound, stopSine];
+const songChoices = document.getElementById("songChoice");
 
 let isPlaying = false;
+let songChoice = songChoices.value;
 
 function stopAll() {
   isPlaying = false;
-  stopSound();
-  stopSine();
+  stopSongs[songChoice]();
   stopDraw();
 }
+
+songChoices.addEventListener("input", () => {
+  songChoice = songChoices.value;
+});
 
 play.addEventListener("click", () => {
   isPlaying = !isPlaying;
   if (isPlaying) {
-    songs[Math.floor(Math.random() * songs.length)]();
+    startSongs[songChoice]();
     startDraw();
   } else {
     stopAll();

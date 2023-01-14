@@ -48,15 +48,32 @@
   </head>
   <body>
     <main>
-      <h1>Random Music JS</h1>
+      <div class="title">
+        <h1>Random Music JS</h1>
+        <div class="view-controls">
+          <div id="currentStep"></div>
+          <div id="currentMeasure"></div>
+          <div id="currentSong"></div>
+          <div id="currentSongDuration"></div>
+          <div id="currentScale"></div>
+        </div>
+      </div>
       <canvas id="canva" width="600" height="220"></canvas>
     </main>
     <div class="controls">
+      <select name="songs" id="songChoice">
+        <option value="0">Eight Bits</option>
+        <option value="1">Sine</option>
+      </select>
       <button id="play">Play</button>
       <button id="stop">Stop</button>
     </div>
     <script src="Timer.js" type="module"></script>
     <script src="notes.js" type="module"></script>
+    <script src="utils.js" type="module"></script>
+    <script src="Mode.js" type="module"></script>
+    <script src="Enveloppe.js" type="module"></script>
+    <script src="Synth.js" type="module"></script>
     <script src="draw.js" type="module"></script>
     <script src="sine.js" type="module"></script>
     <script src="heightBits.js" type="module"></script>

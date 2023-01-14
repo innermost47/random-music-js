@@ -15,10 +15,23 @@ main {
   margin-bottom: 20px;
 }
 
+.title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 h1 {
   color: #fff;
   align-self: flex-start;
   font-family: "Rowdies";
+}
+
+.view-controls {
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  text-align: right;
 }
 
 canvas {
