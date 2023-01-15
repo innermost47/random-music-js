@@ -10,10 +10,11 @@ const songChoices = document.getElementById("songChoice");
 
 let isPlaying = false;
 let songChoice = songChoices.value;
+let playingSong;
 
 function stopAll() {
   isPlaying = false;
-  stopSongs[songChoice]();
+  stopSongs[playingSong]();
   stopDraw();
 }
 
@@ -25,6 +26,7 @@ play.addEventListener("click", () => {
   isPlaying = !isPlaying;
   if (isPlaying) {
     startSongs[songChoice]();
+    playingSong = songChoice;
     startDraw();
   } else {
     stopAll();

@@ -52,6 +52,23 @@ canvas {
   flex-direction: row;
 }
 
+select {
+  border: none;
+  box-shadow: none;
+  padding-right: 25px;
+  height: 44px;
+  border-radius: 4px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+option {
+  /* Utiliser une couleur de police simple */
+  color: #000;
+  /* Ajouter un peu d'espacement entre le texte et les bords */
+  padding: 12px;
+}
+
 button {
   display: inline-block;
   padding: 10px 20px;
