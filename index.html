@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <meta
       name="description"
-      content="Discover our random electronic music generating app powered by chaos. Simply click the PLAY button and let our random rhythmic signature, which varies between 3 and 4, transport you. The drum set is randomly generated from a sample library, while a synthesizer handles the bass, another handles the chords, and two more handle the melody. New melodic and rhythmic parts are generated every 8 measures. We use JavaScript's Web Audio API to create this immersive and unique musical experience. Try it out now!"
+      content='Experience the future of music with our cutting-edge, JavaScript-powered random music generator. Discover the endless possibilities of unique, randomly generated melodies and rhythms with our two options of music: "eight bits" for an upbeat and energetic sound, and "sine" for a softer and more ambient sound. Utilizing the Web Audio API, our app offers an immersive and unparalleled musical experience. Try it out now and let the beats transport you.'
     />
     <meta property="og:title" content="Random Music JS" />
     <meta property="og:type" content="website" />
@@ -17,7 +17,7 @@
     />
     <meta
       property="og:description"
-      content="Discover our random electronic music generating app powered by chaos. Simply click the PLAY button and let our random rhythmic signature, which varies between 3 and 4, transport you. The drum set is randomly generated from a sample library, while a synthesizer handles the bass, another handles the chords, and two more handle the melody. New melodic and rhythmic parts are generated every 8 measures. We use JavaScript's Web Audio API to create this immersive and unique musical experience. Try it out now!"
+      content='Experience the future of music with our cutting-edge, JavaScript-powered random music generator. Discover the endless possibilities of unique, randomly generated melodies and rhythms with our two options of music: "eight bits" for an upbeat and energetic sound, and "sine" for a softer and more ambient sound. Utilizing the Web Audio API, our app offers an immersive and unparalleled musical experience. Try it out now and let the beats transport you.'
     />
     <link rel="stylesheet" href="style.css" />
     <link rel="shortcut icon" href="logo.png" type="image/x-icon" />
@@ -49,6 +49,26 @@
       </select>
       <button id="play">Play</button>
       <button id="stop">Stop</button>
+    </div>
+    <div id="welcome-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="img-container">
+          <img src="logo.png" alt="logo" />
+        </div>
+        <h2>Welcome to our Random Music Generator!</h2>
+        <p>
+          Welcome to our unique and innovative music generator! Our application,
+          built entirely with pure JavaScript and utilizing the Web Audio API,
+          offers you two distinct music options to choose from: "eight bits" for
+          a more upbeat and energetic sound, and "sine" for a softer and more
+          ambient sound. The music is generated randomly in real-time, creating
+          unique melodies and rhythms every time you hit play. Discover the
+          endless possibilities of our randomly generated music and let the
+          beats transport you!
+        </p>
+        <button id="discover-button">Discover</button>
+      </div>
     </div>
     <script src="Timer.js" type="module"></script>
     <script src="notes.js" type="module"></script>

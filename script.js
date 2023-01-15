@@ -7,6 +7,9 @@ const stopSong = document.getElementById("stop");
 const startSongs = [start, startSine];
 const stopSongs = [stopSound, stopSine];
 const songChoices = document.getElementById("songChoice");
+const modal = document.getElementById("welcome-modal");
+const span = document.getElementsByClassName("close")[0];
+const discoverButton = document.getElementById("discover-button");
 
 let isPlaying = false;
 let songChoice = songChoices.value;
@@ -35,4 +38,16 @@ play.addEventListener("click", () => {
 
 stopSong.addEventListener("click", () => {
   stopAll();
+});
+
+window.onload = function () {
+  modal.style.display = "block";
+};
+
+span.onclick = function () {
+  modal.style.display = "none";
+};
+
+discoverButton.addEventListener("click", function () {
+  modal.style.display = "none";
 });
