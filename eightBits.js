@@ -73,7 +73,6 @@ let noteFilterFrequencyArrived = noteFilterFrequency / 2;
 let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
 let percussions = [];
-let time = 0;
 
 function initDrumMachine() {
   kick = drumKits.kicks[Math.floor(Math.random() * drumKits.kicks.length)];
@@ -349,7 +348,6 @@ function initTime() {
   decayTime = 0.1;
   delay.delayTime.value = 0.5;
   delayGain.gain.value = 0.2;
-  time = (1000 * bpm) / 60;
 }
 
 function disconnectAll(oscs, gains, duration) {
@@ -485,6 +483,9 @@ function playMelody(frequency, duration, filter) {
 }
 
 function playSequence() {
+  playDrum(percussions, audioCtx, currentStep, velocities, timeSignature);
+  playBassAndChords();
+  playInstruments(randomizer);
   if (currentStep < timeSignature - 1) {
     currentStep++;
   } else {
@@ -522,9 +523,6 @@ function playSequence() {
       }
     }
   }
-  playDrum(percussions, audioCtx, currentStep, velocities, timeSignature);
-  playBassAndChords();
-  playInstruments(randomizer);
 }
 
 function checkActions() {
