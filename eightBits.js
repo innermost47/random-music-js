@@ -29,7 +29,7 @@ const delay = audioCtx.createDelay();
 const delayGain = audioCtx.createGain();
 const songs = 10;
 const measures = 8;
-const songDuration = measures * 5;
+const songDuration = measures * 4;
 const velocities = [0.3, 1];
 
 let currentStep = 0;
@@ -515,10 +515,10 @@ function playSequence() {
       if (currentSong == songs) {
         stopSound();
       } else {
-        setTimeout(() => {
-          loop();
-        }, 2000);
-        return;
+        initScale();
+        initDrumMachine();
+        randomIntro();
+        createTheme();
       }
     }
   }
