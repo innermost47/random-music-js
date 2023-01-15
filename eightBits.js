@@ -483,18 +483,21 @@ function playMelody(frequency, duration, filter) {
 }
 
 function playSequence() {
+  if (currentSongDuration > 0 && currentStep == 0 && currentMeasure == 0) {
+    playPercussionWithVelocity(cy, 1, audioCtx, timeSignature);
+    playPercussionWithVelocity(kick, 1, audioCtx, timeSignature);
+  }
   playDrum(percussions, audioCtx, currentStep, velocities, timeSignature);
   playBassAndChords();
   playInstruments(randomizer);
-  if (currentStep < timeSignature - 1) {
-    currentStep++;
-  } else {
+  currentStep++;
+  if (currentStep == timeSignature - 1) {
     currentStep = 0;
     currentMeasure++;
-    if (currentMeasure === measures - 1) {
+    if (currentMeasure == measures - 1) {
       randomBreak();
     }
-    if (currentMeasure === measures) {
+    if (currentMeasure == measures) {
       randomRiddim();
       if (currentSongDuration > 1) {
         checkActions();
@@ -502,18 +505,14 @@ function playSequence() {
       randomizer = Math.random();
       currentMeasure = 0;
       currentSongDuration++;
-      if (currentSongDuration > 0) {
-        playPercussionWithVelocity(cy, 1, audioCtx, timeSignature);
-        playPercussionWithVelocity(kick, 1, audioCtx, timeSignature);
-      }
     }
-    if (currentSongDuration === songDuration) {
+    if (currentSongDuration == songDuration) {
       playPercussionWithVelocity(cy, 1, audioCtx, timeSignature);
       playPercussionWithVelocity(kick, 1, audioCtx, timeSignature);
       currentSongDuration = 0;
       currentMeasure = 0;
       currentSong++;
-      if (currentSong === songs) {
+      if (currentSong == songs) {
         stopSound();
       } else {
         setTimeout(() => {
@@ -693,7 +692,7 @@ function generateRandomBass(frequencies) {
     if (sequence[i].note != false) {
       sequence[i].duration = timeSignature / bpm;
       let j = i + 1;
-      while (sequence[j] && sequence[j].note === false) {
+      while (sequence[j] && sequence[j].note == false) {
         sequence[i].duration += timeSignature / bpm;
         j++;
       }
@@ -726,7 +725,7 @@ function generateRandomNoteSequence(frequencies) {
     if (sequence[i].note != false) {
       sequence[i].duration = timeSignature / bpm;
       let j = i + 1;
-      while (sequence[j] && sequence[j].note === false) {
+      while (sequence[j] && sequence[j].note == false) {
         sequence[i].duration += timeSignature / bpm;
         j++;
       }
@@ -759,7 +758,7 @@ function generateRandomChordSequence(frequencies) {
     if (sequence[i].note != false) {
       sequence[i].duration = timeSignature / bpm;
       let j = i + 1;
-      while (sequence[j] && sequence[j].note === false) {
+      while (sequence[j] && sequence[j].note == false) {
         sequence[i].duration += timeSignature / bpm;
         j++;
       }
@@ -792,7 +791,7 @@ function generateRandomMelody(frequencies) {
     if (sequence[i].note != false) {
       sequence[i].duration = timeSignature / bpm;
       let j = i + 1;
-      while (sequence[j] && sequence[j].note === false) {
+      while (sequence[j] && sequence[j].note == false) {
         sequence[i].duration += timeSignature / bpm;
         j++;
       }
