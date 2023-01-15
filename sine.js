@@ -1,7 +1,7 @@
-import { Enveloppe } from "./Enveloppe.js";
-import { Mode } from "./Mode.js";
-import { Synth } from "./Synth.js";
-import { Timer } from "./Timer.js";
+import { Enveloppe } from "./src/Enveloppe.js";
+import { Mode } from "./src/Mode.js";
+import { Synth } from "./src/Synth.js";
+import { Timer } from "./src/Timer.js";
 import {
   chromaticScale,
   generateNoteForBass,
@@ -9,7 +9,8 @@ import {
   generateNotesForArpegiator,
   generateRandomNoteSequence,
   modes,
-} from "./utils.js";
+  pickRandomProperty,
+} from "./utils/utils.js";
 
 const audioCtx = new AudioContext();
 const delay = audioCtx.createDelay();
@@ -35,13 +36,6 @@ let bass = [];
 let arpegio = [];
 let currentMeasure = 0;
 let frequencies = [];
-
-function pickRandomProperty(obj) {
-  let result;
-  let count = 0;
-  for (let prop in obj) if (Math.random() < 1 / ++count) result = prop;
-  return result;
-}
 
 function init() {
   mode.mode = pickRandomProperty(modes);

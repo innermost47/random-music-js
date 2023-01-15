@@ -1,5 +1,5 @@
-import { NOTES_JSON } from "./notes.js";
-import { chromaticScale, modes } from "./utils.js";
+import { NOTES_JSON } from "../utils/notes.js";
+import { chromaticScale, modes } from "../utils/utils.js";
 
 export class Mode {
   constructor() {

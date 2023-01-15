@@ -1,4 +1,4 @@
-import { Timer } from "./Timer.js";
+import { Timer } from "./src/Timer.js";
 
 const timer = new Timer();
 const canvas = document.getElementById("canva");

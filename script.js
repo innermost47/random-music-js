@@ -1,5 +1,5 @@
 import { startDraw, stopDraw } from "./draw.js";
-import { start, stopSound } from "./heightBits.js";
+import { start, stopSound } from "./eightBits.js";
 import { startSine, stopSine } from "./sine.js";
 
 const play = document.getElementById("play");
@@ -40,14 +40,18 @@ stopSong.addEventListener("click", () => {
   stopAll();
 });
 
-window.onload = function () {
-  modal.style.display = "block";
-};
+if (!localStorage.getItem("has-seen-modal")) {
+  window.onload = function () {
+    modal.style.display = "block";
+  };
+}
 
 span.onclick = function () {
   modal.style.display = "none";
+  localStorage.setItem("has-seen-modal", true);
 };
 
 discoverButton.addEventListener("click", function () {
   modal.style.display = "none";
+  localStorage.setItem("has-seen-modal", true);
 });

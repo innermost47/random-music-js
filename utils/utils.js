@@ -90,6 +90,7 @@ export const chromaticScale = [
   "G",
   "G#",
 ];
+
 export const modes = {
   ionian: [0, 2, 4, 5, 7, 9, 11],
   dorian: [0, 2, 3, 5, 7, 9, 10],
@@ -101,5 +102,43 @@ export const modes = {
   gipsy: [0, 1, 4, 5, 7, 8, 11],
   harmonicMinor: [0, 2, 3, 5, 7, 8, 11],
   arabianDorian: [0, 2, 3, 6, 7, 9, 10],
-  chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
 };
+
+export const minorModes = {
+  phrygian: [0, 1, 3, 5, 7, 8, 10],
+  aeolian: [0, 2, 3, 5, 7, 8, 10],
+  arabian: [0, 1, 4, 5, 7, 8, 10],
+};
+
+export const initBuffers = (
+  folder,
+  percussionName,
+  percussionNameBuffers,
+  audioCtx
+) => {
+  const requests = [];
+  for (let i = 0; i < 4; i++) {
+    const request = new XMLHttpRequest();
+    request.open("GET", `/sounds/${folder}/${percussionName + i}.wav`, true);
+    request.responseType = "arraybuffer";
+    requests.push(
+      new Promise((resolve, reject) => {
+        request.onload = function () {
+          audioCtx.decodeAudioData(request.response, function (buffer) {
+            percussionNameBuffers[i] = buffer;
+            resolve();
+          });
+        };
+        request.send();
+      })
+    );
+  }
+  return Promise.all(requests);
+};
+
+export function pickRandomProperty(obj) {
+  let result;
+  let count = 0;
+  for (let prop in obj) if (Math.random() < 1 / ++count) result = prop;
+  return result;
+}
