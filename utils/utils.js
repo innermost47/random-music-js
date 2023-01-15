@@ -114,10 +114,11 @@ export const initBuffers = (
   folder,
   percussionName,
   percussionNameBuffers,
-  audioCtx
+  audioCtx,
+  totalFileByDrum
 ) => {
   const requests = [];
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < totalFileByDrum; i++) {
     const request = new XMLHttpRequest();
     request.open("GET", `/sounds/${folder}/${percussionName + i}.wav`, true);
     request.responseType = "arraybuffer";
@@ -142,3 +143,68 @@ export function pickRandomProperty(obj) {
   for (let prop in obj) if (Math.random() < 1 / ++count) result = prop;
   return result;
 }
+
+export const drumKits = {
+  kicks: [],
+  snares: [],
+  chhs: [],
+  ohhs: [],
+  cls: [],
+  cys: [],
+};
+
+export const audioCtx = new AudioContext();
+
+export function playPercussionWithVelocity(
+  buffer,
+  velocity,
+  audioCtx,
+  timeSignature
+) {
+  let gainNode = audioCtx.createGain();
+  let percBuffer = audioCtx.createBufferSource();
+  percBuffer.buffer = buffer;
+  gainNode.gain.value = velocity;
+  percBuffer.connect(gainNode).connect(audioCtx.destination);
+  percBuffer.start(audioCtx.currentTime);
+  percBuffer.stop(audioCtx.currentTime + timeSignature);
+  setTimeout(() => {
+    percBuffer.disconnect();
+    gainNode.disconnect();
+  }, timeSignature * 100);
+}
+
+export function playDrum(
+  percussions,
+  audioCtx,
+  currentStep,
+  velocities,
+  timeSignature
+) {
+  percussions.forEach(({ array, type, velocity }) => {
+    if (array[currentStep]) {
+      if (velocity) {
+        playPercussionWithVelocity(
+          type,
+          velocities[Math.floor(Math.random() * velocities.length)],
+          audioCtx,
+          timeSignature
+        );
+      } else {
+        playPercussionWithVelocity(type, 1, audioCtx, timeSignature);
+      }
+    }
+  });
+}
+
+export function randomPercussionSequence(random, totalSteps) {
+  let array = [];
+  for (let i = 0; i < totalSteps; i++) {
+    array.push(Math.random() < random);
+  }
+  return array;
+}
+
+export const SINE = "sine";
+export const SQUARE = "square";
+export const SAW = "sawtooth";

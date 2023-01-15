@@ -3,6 +3,7 @@ import { Mode } from "./src/Mode.js";
 import { Synth } from "./src/Synth.js";
 import { Timer } from "./src/Timer.js";
 import {
+  audioCtx,
   chromaticScale,
   generateNoteForBass,
   generateNoteSequenceForChord,
@@ -12,7 +13,6 @@ import {
   pickRandomProperty,
 } from "./utils/utils.js";
 
-const audioCtx = new AudioContext();
 const delay = audioCtx.createDelay();
 const feedback = audioCtx.createGain();
 const filter = audioCtx.createBiquadFilter();

@@ -1,27 +1,23 @@
 import { Timer } from "./src/Timer.js";
 import {
+  audioCtx,
   chromaticScale,
+  drumKits,
   initBuffers,
   minorModes,
   pickRandomProperty,
+  playDrum,
+  playPercussionWithVelocity,
+  randomPercussionSequence,
 } from "./utils/utils.js";
 import { Mode } from "./src/Mode.js";
 
-const audioCtx = new AudioContext();
-
-const kickBuffers = [];
-const snareBuffers = [];
-const chhBuffers = [];
-const ohhBuffers = [];
-const clBuffers = [];
-const cyBuffers = [];
-
-initBuffers("eightBits", "kick", kickBuffers, audioCtx)
-  .then(() => initBuffers("eightBits", "snare", snareBuffers, audioCtx))
-  .then(() => initBuffers("eightBits", "chh", chhBuffers, audioCtx))
-  .then(() => initBuffers("eightBits", "ohh", ohhBuffers, audioCtx))
-  .then(() => initBuffers("eightBits", "cl", clBuffers, audioCtx))
-  .then(() => initBuffers("eightBits", "cy", cyBuffers, audioCtx));
+initBuffers("eightBits", "kick", drumKits.kicks, audioCtx, 4)
+  .then(() => initBuffers("eightBits", "snare", drumKits.snares, audioCtx, 4))
+  .then(() => initBuffers("eightBits", "chh", drumKits.chhs, audioCtx, 4))
+  .then(() => initBuffers("eightBits", "ohh", drumKits.ohhs, audioCtx, 4))
+  .then(() => initBuffers("eightBits", "cl", drumKits.cls, audioCtx, 4))
+  .then(() => initBuffers("eightBits", "cy", drumKits.cys, audioCtx, 4));
 
 const timer = new Timer();
 const mode = new Mode();
@@ -76,14 +72,27 @@ let noteFilterFrequency = 4000;
 let noteFilterFrequencyArrived = noteFilterFrequency / 2;
 let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
+let percussions = [];
+let time = 0;
 
 function initDrumMachine() {
-  kick = kickBuffers[Math.floor(Math.random() * kickBuffers.length)];
-  chh = chhBuffers[Math.floor(Math.random() * chhBuffers.length)];
-  snare = snareBuffers[Math.floor(Math.random() * snareBuffers.length)];
-  ohh = ohhBuffers[Math.floor(Math.random() * ohhBuffers.length)];
-  cl = clBuffers[Math.floor(Math.random() * clBuffers.length)];
-  cy = cyBuffers[0];
+  kick = drumKits.kicks[Math.floor(Math.random() * drumKits.kicks.length)];
+  chh = drumKits.chhs[Math.floor(Math.random() * drumKits.chhs.length)];
+  snare = drumKits.snares[Math.floor(Math.random() * drumKits.snares.length)];
+  ohh = drumKits.ohhs[Math.floor(Math.random() * drumKits.ohhs.length)];
+  cl = drumKits.cls[Math.floor(Math.random() * drumKits.cls.length)];
+  cy = drumKits.cys[0];
+  initDrumsArrays();
+}
+
+function initDrumsArrays() {
+  percussions = [
+    { array: kicksArray, type: kick },
+    { array: chhsArray, type: chh, velocity: true },
+    { array: snaresArray, type: snare, velocity: true },
+    { array: ohhsArray, type: ohh, velocity: true },
+    { array: clsArray, type: cl, velocity: true },
+  ];
 }
 
 function initFilter(
@@ -340,6 +349,7 @@ function initTime() {
   decayTime = 0.1;
   delay.delayTime.value = 0.5;
   delayGain.gain.value = 0.2;
+  time = (1000 * bpm) / 60;
 }
 
 function disconnectAll(oscs, gains, duration) {
@@ -492,30 +502,27 @@ function playSequence() {
       currentMeasure = 0;
       currentSongDuration++;
       if (currentSongDuration > 0) {
-        playPercussionWithVelocity(cy, 1);
-        playPercussionWithVelocity(kick, 1);
+        playPercussionWithVelocity(cy, 1, audioCtx, timeSignature);
+        playPercussionWithVelocity(kick, 1, audioCtx, timeSignature);
       }
     }
     if (currentSongDuration === songDuration) {
+      playPercussionWithVelocity(cy, 1, audioCtx, timeSignature);
+      playPercussionWithVelocity(kick, 1, audioCtx, timeSignature);
       currentSongDuration = 0;
       currentMeasure = 0;
       currentSong++;
-      initScale();
-      initDrumMachine();
-      randomIntro();
-      createTheme();
       if (currentSong === songs) {
-        currentSong = 0;
-        currentSongDuration = 0;
-        currentMeasure = 0;
-        initScale();
-        initDrumMachine();
-        randomIntro();
-        createTheme();
+        stopSound();
+      } else {
+        setTimeout(() => {
+          loop();
+        }, 2000);
+        return;
       }
     }
   }
-  playDrum();
+  playDrum(percussions, audioCtx, currentStep, velocities, timeSignature);
   playBassAndChords();
   playInstruments(randomizer);
 }
@@ -590,47 +597,11 @@ function playInstruments(randomizer) {
   }
 }
 
-function playDrum() {
-  let percussions = [
-    { array: kicksArray, type: kick },
-    { array: chhsArray, type: chh, velocity: true },
-    { array: snaresArray, type: snare, velocity: true },
-    { array: ohhsArray, type: ohh, velocity: true },
-    { array: clsArray, type: cl, velocity: true },
-  ];
-  percussions.forEach(({ array, type, velocity }) => {
-    if (array[currentStep]) {
-      if (velocity) {
-        playPercussionWithVelocity(
-          type,
-          velocities[Math.floor(Math.random() * velocities.length)]
-        );
-      } else {
-        playPercussionWithVelocity(type, 1);
-      }
-    }
-  });
-}
-
 function generateNextMusicalColor() {
   noteArray = generateRandomNoteSequence(melodyFrequencies);
   bassArray = generateRandomBass(bassFrequencies);
   chordArray = generateRandomChordSequence(chordsFrequencies);
   melodyArray = generateRandomMelody(melodyFrequencies);
-}
-
-function playPercussionWithVelocity(buffer, velocity) {
-  let gainNode = audioCtx.createGain();
-  let percBuffer = audioCtx.createBufferSource();
-  percBuffer.buffer = buffer;
-  gainNode.gain.value = velocity;
-  percBuffer.connect(gainNode).connect(audioCtx.destination);
-  percBuffer.start(audioCtx.currentTime);
-  percBuffer.stop(audioCtx.currentTime + timeSignature);
-  setTimeout(() => {
-    percBuffer.disconnect();
-    gainNode.disconnect();
-  }, timeSignature * 100);
 }
 
 function createTheme() {
@@ -645,6 +616,9 @@ function createTheme() {
 }
 
 function loop() {
+  initTime();
+  initDrumMachine();
+  initScale();
   randomIntro();
   createTheme();
   timer.callback = playSequence;
@@ -663,36 +637,33 @@ function resetDrumSequence() {
 
 function randomIntro() {
   resetDrumSequence();
-  for (let i = 0; i < timeSignature; i++) {
-    chhsArray.push(Math.random() < 0.7);
-  }
+  chhsArray = randomPercussionSequence(0.7, timeSignature);
+  initDrumsArrays();
 }
 
 function randomBreak() {
   resetDrumSequence();
-  for (let i = 0; i < timeSignature; i++) {
-    kicksArray.push(Math.random() < 0.1);
-    chhsArray.push(Math.random() < 0.7);
-    snaresArray.push(Math.random() < 0.7);
-    clsArray.push(Math.random() < 0.2);
-    ohhsArray.push(Math.random() < 0.3);
-  }
+  kicksArray = randomPercussionSequence(0.1, timeSignature);
+  chhsArray = randomPercussionSequence(0.7, timeSignature);
+  snaresArray = randomPercussionSequence(0.7, timeSignature);
+  clsArray = randomPercussionSequence(0.2, timeSignature);
+  ohhsArray = randomPercussionSequence(0.3, timeSignature);
+  initDrumsArrays();
 }
 
 function randomRiddim() {
   resetDrumSequence();
   let hasOhh = Math.random() < 0.5;
-  for (let i = 0; i < timeSignature; i++) {
-    kicksArray.push(Math.random() < 0.5);
-    chhsArray.push(Math.random() < 0.7);
-    snaresArray.push(Math.random() < 0.3);
-    clsArray.push(Math.random() < 0.2);
-    if (hasOhh) {
-      ohhsArray.push(Math.random() < 0.3);
-    } else {
-      ohhsArray.push(false);
-    }
+  kicksArray = randomPercussionSequence(0.5, timeSignature);
+  chhsArray = randomPercussionSequence(0.7, timeSignature);
+  snaresArray = randomPercussionSequence(0.3, timeSignature);
+  clsArray = randomPercussionSequence(0.2, timeSignature);
+  if (hasOhh) {
+    ohhsArray = randomPercussionSequence(0.3, timeSignature);
+  } else {
+    ohhsArray = randomPercussionSequence(false, timeSignature);
   }
+  initDrumsArrays();
 }
 
 function generateRandomBass(frequencies) {
@@ -885,8 +856,5 @@ export function start() {
   initFilters();
   delay.connect(delayGain);
   delayGain.connect(audioCtx.destination);
-  initTime();
-  initDrumMachine();
-  initScale();
   loop();
 }
