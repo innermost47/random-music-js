@@ -513,7 +513,11 @@ function playSequence() {
       currentMeasure = 0;
       currentSong++;
       if (currentSong == songs) {
-        stopSound();
+        currentSong = 0;
+        initScale();
+        initDrumMachine();
+        randomIntro();
+        createTheme();
       } else {
         initScale();
         initDrumMachine();
