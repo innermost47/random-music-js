@@ -1,24 +1,30 @@
 body {
-  background-color: rgba(0, 0, 0, 0.938);
+  background-color: rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 0;
+  margin: 0;
 }
 
 main {
   width: 90%;
   margin: auto;
-  max-width: 1000px;
-  height: 85vh;
+  height: 100vh;
   position: relative;
-  margin-bottom: 20px;
 }
 
-.title {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+@media screen and (min-width: 768px) {
+  main {
+    width: 75%;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  main {
+    width: 1200px;
+  }
 }
 
 h1 {
@@ -27,25 +33,10 @@ h1 {
   font-family: "Rowdies";
 }
 
-h2 {
-  font-family: "Rowdies";
-}
-
-.view-controls {
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  text-align: right;
-}
-
 canvas {
   background-color: black;
-  padding: 10px;
   border-radius: 10px;
-  margin-bottom: 20px;
   position: absolute;
-  width: 100%;
-  height: 80%;
   left: 50%;
   transform: translateX(-50%);
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
@@ -54,6 +45,11 @@ canvas {
 .controls {
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 select {

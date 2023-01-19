@@ -1,4 +1,4 @@
-import { startDraw, stopDraw } from "./draw.js";
+import { drawSquare, startDraw, stopDraw, stopDrawingSquare } from "./draw.js";
 import { start, stopSound } from "./eightBits.js";
 import { startSine, stopSine } from "./sine.js";
 
@@ -18,7 +18,7 @@ let playingSong;
 function stopAll() {
   isPlaying = false;
   stopSongs[playingSong]();
-  stopDraw();
+  stopDrawingSquare();
 }
 
 songChoices.addEventListener("input", () => {
@@ -30,7 +30,7 @@ play.addEventListener("click", () => {
   if (isPlaying) {
     startSongs[songChoice]();
     playingSong = songChoice;
-    startDraw();
+    drawSquare();
   } else {
     stopAll();
   }

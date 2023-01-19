@@ -1,3 +1,6 @@
+export const audioCtx = new (window.AudioContext ||
+  window.webkitAudioContext)();
+
 export function generateRandomNoteSequence(frequencies, steps, bpm) {
   const sequence = [];
   for (let i = 0; i < steps; i++) {
@@ -152,8 +155,6 @@ export const drumKits = {
   cls: [],
   cys: [],
 };
-
-export const audioCtx = new AudioContext();
 
 export function playPercussionWithVelocity(
   buffer,
