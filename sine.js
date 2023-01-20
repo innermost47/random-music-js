@@ -26,34 +26,15 @@ const synthMaster = audioCtx.createGain();
 const reverbFilter = audioCtx.createBiquadFilter();
 const reverbGain = audioCtx.createGain();
 const analyzer = audioCtx.createAnalyser();
-const canva = document.getElementById("canva");
-const controls = document.getElementById("controls");
-const ctx = canva.getContext("2d");
 const bpm = 180;
 const totalSteps = 64;
 const measuresNumber = 8;
 const timer = new Timer();
 const velocities = [0.3, 1];
-const chaosQuotes = [
-  "Chaos is the ladder to reality",
-  "True freedom is the ability to flip the coin of order and chaos",
-  "In the chaos lies opportunity",
-  "Chaos is the score of reality",
-  "Reality is queerer than we can suppose",
-  "Survival is not mandatory, embrace the change",
-  "Join the dance of chaos",
-  "Chaos is the confusion of our minds",
-  "Chaos is the mother of evolution",
-  "In the chaos is where we find ourselves",
-];
-
-const tailleMemoireTampon = analyzer.frequencyBinCount;
-const tableauDonnees = new Uint8Array(tailleMemoireTampon);
 
 let melodyNotes = [];
 let currentStep = 0;
 let chords = [];
-let chordIndex = 7;
 let fundamental = [];
 let third = [];
 let fifth = [];
@@ -76,6 +57,8 @@ let ohhsArray = [];
 let tempo = (6000 / bpm / 4) * 10;
 let synthVolume = 0.1;
 let randomizer = Math.random();
+
+lfo.start();
 
 function initBuffers(percussionName, percussionNameBuffers) {
   const requests = [];
@@ -117,13 +100,6 @@ const shortReverbBuffer = audioCtx.createBuffer(
 );
 shortReverbBuffer.getChannelData(0).set(shortReverbData);
 analyzer.fftSize = 2048;
-
-function getRandomColor() {
-  const r = Math.floor(Math.random() * 256);
-  const g = Math.floor(Math.random() * 256);
-  const b = Math.floor(Math.random() * 256);
-  return "rgb(" + r + ", " + g + ", " + b + ")";
-}
 
 function makeDistortionCurve(amount) {
   let n_samples = 256,
@@ -280,9 +256,7 @@ function initFX() {
 }
 
 function connect() {
-  lfo.start();
   lfo.connect(lfoGain);
-
   filter.connect(filterGain);
   filterGain.connect(delay);
   filterGain.connect(synthMaster);
