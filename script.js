@@ -41,9 +41,7 @@ stopSong.addEventListener("click", () => {
 });
 
 if (!localStorage.getItem("has-seen-modal")) {
-  window.onload = function () {
-    modal.style.display = "block";
-  };
+  modal.style.display = "block";
 }
 
 span.onclick = function () {
