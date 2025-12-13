@@ -148,6 +148,7 @@ main {
 .btn-play:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(255, 0, 153, 0.6);
+  color: white;
 }
 
 .btn-play:active {
@@ -166,6 +167,7 @@ main {
   background: rgba(255, 0, 0, 0.2);
   border-color: rgba(255, 0, 0, 0.5);
   box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+  color: white;
 }
 
 .legals {
@@ -179,6 +181,7 @@ main {
   color: white;
   transition: all 0.3s ease;
   font-size: 0.9rem;
+  color: darkgrey;
 }
 
 .legals a:hover {
@@ -320,4 +323,35 @@ main {
   .info-box span {
     font-size: 1rem;
   }
+}
+
+.btn-help-small {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.btn-help-small:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+  transform: scale(1.1);
+}
+
+.btn-help-small:active {
+  transform: scale(0.95);
 }

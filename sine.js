@@ -29,7 +29,7 @@ const analyzer = audioCtx.createAnalyser();
 const bpm = 180;
 const totalSteps = 64;
 const measuresNumber = 8;
-const timer = new Timer();
+export const timer = new Timer();
 const velocities = [0.3, 1];
 
 let melodyNotes = [];
@@ -57,6 +57,7 @@ let ohhsArray = [];
 let tempo = (6000 / bpm / 4) * 10;
 let synthVolume = 0.1;
 let randomizer = Math.random();
+let isPaused = false;
 
 lfo.start();
 
@@ -703,6 +704,7 @@ initBuffers("kick", kickBuffers)
   .then(() => initBuffers("cy", cyBuffers));
 
 function play() {
+  if (isPaused) return;
   if (currentMeasure == 0 && currentStep == 0 && songDuration > 0) {
     playPercussionWithVelocity(cy, 1);
   }
@@ -802,4 +804,8 @@ export function stopSine() {
   if (currentScaleEl) currentScaleEl.textContent = "--";
   if (currentSongDurationEl) currentSongDurationEl.textContent = "--";
   if (currentSongEl) currentSongEl.textContent = "Press Play to start";
+}
+
+export function setPaused(paused) {
+  isPaused = paused;
 }

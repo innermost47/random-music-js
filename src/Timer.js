@@ -3,17 +3,39 @@ export class Timer {
     this._timeInterval = timeInterval;
     this._callback = callback;
     this._errorCallback = errorCallback;
-    this.expected;
-    this.timeOut;
+    this.expected = null;
+    this.timeOut = null;
+    this._paused = false;
+    this._remainingTime = 0;
   }
 
   start() {
     this.expected = Date.now() + this._timeInterval;
     this.timeOut = setTimeout(this.round.bind(this), this._timeInterval);
+    this._paused = false;
   }
 
   stop() {
     clearTimeout(this.timeOut);
+    this.expected = null;
+    this.timeOut = null;
+    this._paused = false;
+  }
+
+  pause() {
+    if (this.timeOut && !this._paused) {
+      clearTimeout(this.timeOut);
+      this._remainingTime = this.expected - Date.now();
+      this._paused = true;
+    }
+  }
+
+  resume() {
+    if (this._paused) {
+      this.expected = Date.now() + this._remainingTime;
+      this.timeOut = setTimeout(this.round.bind(this), this._remainingTime);
+      this._paused = false;
+    }
   }
 
   round() {

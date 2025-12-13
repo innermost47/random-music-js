@@ -19,7 +19,7 @@ initBuffers("eightBits", "kick", drumKits.kicks, audioCtx, 4)
   .then(() => initBuffers("eightBits", "cl", drumKits.cls, audioCtx, 4))
   .then(() => initBuffers("eightBits", "cy", drumKits.cys, audioCtx, 4));
 
-const timer = new Timer();
+export const timer = new Timer();
 const mode = new Mode();
 const bassFilter = audioCtx.createBiquadFilter();
 const noteFilter = audioCtx.createBiquadFilter();
@@ -73,6 +73,7 @@ let noteFilterFrequencyArrived = noteFilterFrequency / 2;
 let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
 let percussions = [];
+let isPaused = false;
 
 function updateDisplay() {
   const currentStepEl = document.getElementById("currentStep");
@@ -501,6 +502,7 @@ function playMelody(frequency, duration, filter) {
 }
 
 function playSequence() {
+  if (isPaused) return;
   if (currentSongDuration > 0 && currentStep == 0 && currentMeasure == 0) {
     playPercussionWithVelocity(cy, 1, audioCtx, timeSignature);
     playPercussionWithVelocity(kick, 1, audioCtx, timeSignature);
@@ -891,4 +893,8 @@ export function start() {
   delay.connect(delayGain);
   delayGain.connect(audioCtx.destination);
   loop();
+}
+
+export function setPaused(paused) {
+  isPaused = paused;
 }
