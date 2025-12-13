@@ -74,6 +74,24 @@ let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
 let percussions = [];
 
+function updateDisplay() {
+  const currentStepEl = document.getElementById("currentStep");
+  const currentMeasureEl = document.getElementById("currentMeasure");
+  const currentScaleEl = document.getElementById("currentScale");
+  const currentSongDurationEl = document.getElementById("currentSongDuration");
+  const currentSongEl = document.getElementById("currentSong");
+
+  if (currentStepEl) currentStepEl.textContent = currentStep;
+  if (currentMeasureEl) currentMeasureEl.textContent = currentMeasure;
+  if (currentScaleEl)
+    currentScaleEl.textContent = `${mode.rootNote} ${mode.mode}`;
+  if (currentSongDurationEl)
+    currentSongDurationEl.textContent = `${currentSongDuration}/${songDuration}`;
+  if (currentSongEl)
+    currentSongEl.textContent =
+      currentSong > 0 ? `Playing - Song ${currentSong}` : "Press Play to start";
+}
+
 function initDrumMachine() {
   kick = drumKits.kicks[Math.floor(Math.random() * drumKits.kicks.length)];
   chh = drumKits.chhs[Math.floor(Math.random() * drumKits.chhs.length)];
@@ -490,6 +508,9 @@ function playSequence() {
   playDrum(percussions, audioCtx, currentStep, velocities, timeSignature);
   playBassAndChords();
   playInstruments(randomizer);
+
+  updateDisplay();
+
   currentStep++;
   if (currentStep == timeSignature - 1) {
     currentStep = 0;
@@ -851,6 +872,18 @@ export function stopSound() {
   currentSongDuration = 0;
   currentSong = 0;
   timer.stop();
+
+  const currentStepEl = document.getElementById("currentStep");
+  const currentMeasureEl = document.getElementById("currentMeasure");
+  const currentScaleEl = document.getElementById("currentScale");
+  const currentSongDurationEl = document.getElementById("currentSongDuration");
+  const currentSongEl = document.getElementById("currentSong");
+
+  if (currentStepEl) currentStepEl.textContent = "--";
+  if (currentMeasureEl) currentMeasureEl.textContent = "--";
+  if (currentScaleEl) currentScaleEl.textContent = "--";
+  if (currentSongDurationEl) currentSongDurationEl.textContent = "--";
+  if (currentSongEl) currentSongEl.textContent = "Press Play to start";
 }
 
 export function start() {

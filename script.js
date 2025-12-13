@@ -1,4 +1,4 @@
-import { drawSquare, startDraw, stopDraw, stopDrawingSquare } from "./draw.js";
+import { startDraw, stopDraw } from "./draw.js";
 import { start, stopSound } from "./eightBits.js";
 import { startSine, stopSine } from "./sine.js";
 
@@ -8,8 +8,6 @@ const startSongs = [start, startSine];
 const stopSongs = [stopSound, stopSine];
 const songChoices = document.getElementById("songChoice");
 const modal = document.getElementById("welcome-modal");
-const span = document.getElementsByClassName("close")[0];
-const discoverButton = document.getElementById("discover-button");
 
 let isPlaying = false;
 let songChoice = songChoices.value;
@@ -18,7 +16,13 @@ let playingSong;
 function stopAll() {
   isPlaying = false;
   stopSongs[playingSong]();
-  stopDrawingSquare();
+  stopDraw();
+
+  play.classList.remove("playing");
+  const icon = play.querySelector("i");
+  if (icon) {
+    icon.className = "bi bi-play-fill me-2";
+  }
 }
 
 songChoices.addEventListener("input", () => {
@@ -27,10 +31,17 @@ songChoices.addEventListener("input", () => {
 
 play.addEventListener("click", () => {
   isPlaying = !isPlaying;
+
   if (isPlaying) {
     startSongs[songChoice]();
     playingSong = songChoice;
-    drawSquare();
+    startDraw();
+
+    play.classList.add("playing");
+    const icon = play.querySelector("i");
+    if (icon) {
+      icon.className = "bi bi-pause-fill me-2";
+    }
   } else {
     stopAll();
   }
@@ -41,15 +52,12 @@ stopSong.addEventListener("click", () => {
 });
 
 if (!localStorage.getItem("has-seen-modal")) {
-  modal.style.display = "block";
+  setTimeout(() => {
+    const welcomeModal = new bootstrap.Modal(modal);
+    welcomeModal.show();
+
+    modal.addEventListener("hidden.bs.modal", () => {
+      localStorage.setItem("has-seen-modal", true);
+    });
+  }, 100);
 }
-
-span.onclick = function () {
-  modal.style.display = "none";
-  localStorage.setItem("has-seen-modal", true);
-};
-
-discoverButton.addEventListener("click", function () {
-  modal.style.display = "none";
-  localStorage.setItem("has-seen-modal", true);
-});

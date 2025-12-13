@@ -13,66 +13,189 @@
     <meta property="og:type" content="website" />
     <meta
       property="og:image"
-      content="https://random-music-js.inner-most.fr/logo.png"
+      content="https://random-music-js.inner-most.fr/logo.svg"
     />
     <meta
       property="og:description"
       content='Experience the future of music with our cutting-edge, JavaScript-powered random music generator. Discover the endless possibilities of unique, randomly generated melodies and rhythms with our two options of music: "eight bits" for an upbeat and energetic sound, and "sine" for a softer and more ambient sound. Utilizing the Web Audio API, our app offers an immersive and unparalleled musical experience. Try it out now and let the beats transport you.'
     />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+    />
+
     <link rel="stylesheet" href="style.css" />
-    <link rel="shortcut icon" href="logo.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="logo.svg" type="image/x-icon" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Rowdies&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Rowdies&family=Inter:wght@300;400;600;700&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
-    <main>
-      <div class="title">
-        <h1>Random Music JS</h1>
-        <div class="view-controls">
-          <div id="currentStep"></div>
-          <div id="currentMeasure"></div>
-          <div id="currentSong"></div>
-          <div id="currentSongDuration"></div>
-          <div id="currentScale"></div>
+    <canvas id="canva"></canvas>
+
+    <div class="canvas-overlay"></div>
+
+    <div class="content-wrapper">
+      <main class="container-fluid h-100">
+        <div class="row h-100 align-items-center justify-content-center">
+          <div class="col-12 col-lg-12 col-xl-12 ms-5">
+            <div class="text-center mb-4">
+              <h1 class="display-4 fw-bold text-white mb-3 title-glow">
+                <i class="bi bi-music-note-beamed me-2"></i>
+                Random Music JS
+              </h1>
+              <p class="lead text-white">Generative psychedelic soundscapes</p>
+            </div>
+
+            <div class="player-card">
+              <div class="card-body p-4">
+                <div class="info-display mb-4">
+                  <div class="row g-2 text-center">
+                    <div class="col-6 col-md-6">
+                      <div class="info-box">
+                        <small class="text-light d-block">Step</small>
+                        <span id="currentStep" class="fw-bold">--</span>
+                      </div>
+                    </div>
+                    <div class="col-6 col-md-6">
+                      <div class="info-box">
+                        <small class="text-light d-block">Measure</small>
+                        <span id="currentMeasure" class="fw-bold">--</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row g-2 text-center mt-3">
+                    <div class="col-6 col-md-6">
+                      <div class="info-box">
+                        <small class="text-light d-block">Scale</small>
+                        <span id="currentScale" class="fw-bold">--</span>
+                      </div>
+                    </div>
+                    <div class="col-6 col-md-6">
+                      <div class="info-box">
+                        <small class="text-light d-block">Duration</small>
+                        <span id="currentSongDuration" class="fw-bold">--</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label
+                    for="songChoice"
+                    class="form-label text-white fw-semibold"
+                  >
+                    <i class="bi bi-soundwave me-2"></i>Sound Style
+                  </label>
+                  <select class="form-select form-select-lg" id="songChoice">
+                    <option value="0">Eight Bits - Energetic & Upbeat</option>
+                    <option value="1">Sine - Soft & Ambient</option>
+                  </select>
+                </div>
+
+                <div class="d-flex gap-3 justify-content-center">
+                  <button id="play" class="btn btn-play btn-lg px-5">
+                    <i class="bi bi-play-fill me-2"></i>
+                    <span class="play-text">Play</span>
+                    <span class="pause-text d-none">Pause</span>
+                  </button>
+                  <button id="stop" class="btn btn-stop btn-lg px-4">
+                    <i class="bi bi-stop-fill"></i>
+                  </button>
+                </div>
+
+                <div class="text-center mt-3">
+                  <small id="currentSong" class="text-light"
+                    >Press Play to start</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="legals">
+        <a
+          href="https://legals.anthony-charretier.fr"
+          target="_blank"
+          class="text-decoration-none"
+        >
+          <i class="bi bi-shield-check me-1"></i>Legal Information
+        </a>
+      </footer>
+    </div>
+
+    <div class="modal fade" id="welcome-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body text-center p-5">
+            <div class="mb-4">
+              <img
+                src="logo.svg"
+                alt="logo"
+                class="img-fluid"
+                style="max-width: 250px"
+              />
+            </div>
+            <h2 class="mb-4 fw-bold">Welcome to Random Music Generator!</h2>
+            <p class="lead mb-4">
+              Experience unique and innovative generative music! Our
+              application, built entirely with pure JavaScript and utilizing the
+              Web Audio API, offers you two distinct music options:
+            </p>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <div class="p-3 rounded">
+                  <h5 class="fw-bold mb-2">
+                    <i class="bi bi-lightning-charge text-warning"></i> Eight
+                    Bits
+                  </h5>
+                  <p class="small mb-0">Upbeat and energetic sound</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 rounded">
+                  <h5 class="fw-bold mb-2">
+                    <i class="bi bi-water text-info"></i> Sine
+                  </h5>
+                  <p class="small mb-0">Soft and ambient sound</p>
+                </div>
+              </div>
+            </div>
+            <p class="mb-4">
+              The music is generated randomly in real-time, creating unique
+              melodies and rhythms every time you hit play. Let the beats
+              transport you!
+            </p>
+            <button
+              class="btn btn-outline-primary btn-lg px-5 mt-4"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-play-circle me-2"></i>Start Exploring
+            </button>
+          </div>
         </div>
       </div>
-      <canvas id="canva" width="600" height="220"></canvas>
-      <div class="controls" id="controls">
-        <select name="songs" id="songChoice">
-          <option value="0">Eight Bits</option>
-          <option value="1">Sine</option>
-        </select>
-        <button id="play">Play</button>
-        <button id="stop">Stop</button>
-      </div>
-    </main>
-    <div class="legals">
-      <a href="https://legals.anthony-charretier.fr" target="_blank">Legals</a>
     </div>
-    <div id="welcome-modal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <div class="img-container">
-          <img src="logo.png" alt="logo" />
-        </div>
-        <h2>Welcome to our Random Music Generator!</h2>
-        <p>
-          Welcome to our unique and innovative music generator! Our application,
-          built entirely with pure JavaScript and utilizing the Web Audio API,
-          offers you two distinct music options to choose from: "eight bits" for
-          a more upbeat and energetic sound, and "sine" for a softer and more
-          ambient sound. The music is generated randomly in real-time, creating
-          unique melodies and rhythms every time you hit play. Discover the
-          endless possibilities of our randomly generated music and let the
-          beats transport you!
-        </p>
-        <button id="discover-button">Discover</button>
-      </div>
-    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js" type="module"></script>
   </body>
 </html>

@@ -60,6 +60,23 @@ let randomizer = Math.random();
 
 lfo.start();
 
+function updateDisplay() {
+  const currentStepEl = document.getElementById("currentStep");
+  const currentMeasureEl = document.getElementById("currentMeasure");
+  const currentScaleEl = document.getElementById("currentScale");
+  const currentSongDurationEl = document.getElementById("currentSongDuration");
+  const currentSongEl = document.getElementById("currentSong");
+
+  if (currentStepEl) currentStepEl.textContent = currentStep;
+  if (currentMeasureEl) currentMeasureEl.textContent = currentMeasure;
+  if (currentScaleEl) currentScaleEl.textContent = "A Minor";
+  if (currentSongDurationEl)
+    currentSongDurationEl.textContent = `${songDuration}`;
+  if (currentSongEl)
+    currentSongEl.textContent =
+      songDuration > 0 ? `Measure ${songDuration}` : "Starting...";
+}
+
 function initBuffers(percussionName, percussionNameBuffers) {
   const requests = [];
   for (let i = 0; i < 1; i++) {
@@ -708,6 +725,8 @@ function play() {
     playNote(sq, sqSynth);
   }
   playDrum();
+  updateDisplay();
+
   currentStep++;
   if (currentStep == totalSteps) {
     currentStep = 0;
@@ -767,4 +786,20 @@ export function startSine() {
 export function stopSine() {
   timer.stop();
   disconnect();
+
+  currentStep = 0;
+  currentMeasure = 0;
+  songDuration = 0;
+
+  const currentStepEl = document.getElementById("currentStep");
+  const currentMeasureEl = document.getElementById("currentMeasure");
+  const currentScaleEl = document.getElementById("currentScale");
+  const currentSongDurationEl = document.getElementById("currentSongDuration");
+  const currentSongEl = document.getElementById("currentSong");
+
+  if (currentStepEl) currentStepEl.textContent = "--";
+  if (currentMeasureEl) currentMeasureEl.textContent = "--";
+  if (currentScaleEl) currentScaleEl.textContent = "--";
+  if (currentSongDurationEl) currentSongDurationEl.textContent = "--";
+  if (currentSongEl) currentSongEl.textContent = "Press Play to start";
 }
