@@ -29,8 +29,9 @@ const analyzer = audioCtx.createAnalyser();
 const bpm = 180;
 const totalSteps = 64;
 const measuresNumber = 8;
-export const timer = new Timer();
 const velocities = [0.3, 1];
+
+export const timer = new Timer();
 
 let melodyNotes = [];
 let currentStep = 0;
@@ -75,7 +76,7 @@ function updateDisplay() {
     currentSongDurationEl.textContent = `${songDuration}`;
   if (currentSongEl)
     currentSongEl.textContent =
-      songDuration > 0 ? `Measure ${songDuration}` : "Starting...";
+      songDuration + 1 > 0 ? `Measure ${songDuration + 1}` : "Starting...";
 }
 
 function initBuffers(percussionName, percussionNameBuffers) {

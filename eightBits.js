@@ -20,6 +20,7 @@ initBuffers("eightBits", "kick", drumKits.kicks, audioCtx, 4)
   .then(() => initBuffers("eightBits", "cy", drumKits.cys, audioCtx, 4));
 
 export const timer = new Timer();
+
 const mode = new Mode();
 const bassFilter = audioCtx.createBiquadFilter();
 const noteFilter = audioCtx.createBiquadFilter();
@@ -27,7 +28,6 @@ const chordFilter = audioCtx.createBiquadFilter();
 const melodyFilter = audioCtx.createBiquadFilter();
 const delay = audioCtx.createDelay();
 const delayGain = audioCtx.createGain();
-const songs = 10;
 const measures = 8;
 const songDuration = measures * 4;
 const velocities = [0.3, 1];
@@ -42,6 +42,7 @@ let noteThemeArray = [];
 let bassThemeArray = [];
 let chordThemeArray = [];
 let melodyThemeArray = [];
+let decayTime;
 let kick;
 let chh;
 let ohh;
@@ -53,11 +54,9 @@ let chhsArray = [];
 let snaresArray = [];
 let clsArray = [];
 let ohhsArray = [];
-let decayTime;
 let timeSignature;
 let currentMeasure = 0;
 let currentSongDuration = 0;
-let currentSong = 0;
 let attackTime = 0;
 let frequencies = [];
 let melodyFrequencies = [];
@@ -74,6 +73,7 @@ let melodyFilterFrequency = 6000;
 let melodyFilterFrequencyArrived = melodyFilterFrequency / 2;
 let percussions = [];
 let isPaused = false;
+let currentSong = 0;
 
 function updateDisplay() {
   const currentStepEl = document.getElementById("currentStep");
@@ -90,7 +90,9 @@ function updateDisplay() {
     currentSongDurationEl.textContent = `${currentSongDuration}/${songDuration}`;
   if (currentSongEl)
     currentSongEl.textContent =
-      currentSong > 0 ? `Playing - Song ${currentSong}` : "Press Play to start";
+      currentSong + 1 > 0
+        ? `Playing - Song ${currentSong + 1}`
+        : "Press Play to start";
 }
 
 function initDrumMachine() {
@@ -535,18 +537,10 @@ function playSequence() {
       currentSongDuration = 0;
       currentMeasure = 0;
       currentSong++;
-      if (currentSong == songs) {
-        currentSong = 0;
-        initScale();
-        initDrumMachine();
-        randomIntro();
-        createTheme();
-      } else {
-        initScale();
-        initDrumMachine();
-        randomIntro();
-        createTheme();
-      }
+      initScale();
+      initDrumMachine();
+      randomIntro();
+      createTheme();
     }
   }
 }
