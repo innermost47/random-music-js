@@ -93,27 +93,6 @@ This generator creates a more ambient, evolving electronic soundscape, primarily
 5.  **Stop:** Click the "Stop" button to stop the music and reset the generator.
 6.  **Help:** Click the "Help" button to re-open the welcome modal (if implemented).
 
-## Project Structure
-
-```
-├── public/                # Static assets, including index.html and sounds
-│   ├── sounds/            # Audio samples for drums and reverb impulses
-│   │   ├── eightBits/
-│   │   └── sine/
-│   ├── css/
-│   ├── js/
-│   └── index.html
-├── src/
-│   ├── Timer.js           # Custom timer for audio scheduling
-│   └── Mode.js            # Handles musical scales and frequency generation
-├── eightBits.js           # The EightBits music generator module
-├── sine.js                # The Sine Wave music generator module
-├── main.js                # Main application logic, UI interactions, and playback control
-├── utils/
-│   └── utils.js           # Utility functions (audio context, scale data, drum kits, etc.)
-└── README.md              # This file
-```
-
 ## Technologies Used
 
 - HTML5
